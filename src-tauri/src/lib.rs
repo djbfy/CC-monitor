@@ -7,7 +7,7 @@ pub mod pty_watcher;
 pub mod state;
 
 use state::AppState;
-use tauri::Manager;
+use tauri::{Manager, WindowEvent};
 
 pub fn run() {
     tauri::Builder::default()
@@ -34,15 +34,30 @@ pub fn run() {
             if let Some(bar) = app.get_webview_window("bar") {
                 let _ = bar.hide();
             }
+
+            // When main window close is requested, prevent it.
+            // Frontend will show confirmation and call exit_app if confirmed.
+            if let Some(main) = app.get_webview_window("main") {
+                main.on_window_event(|event| {
+                    if let WindowEvent::CloseRequested { api, .. } = event {
+                        // Prevent close — frontend shows confirmation dialog,
+                        // then calls exit_app to actually close and kill sessions
+                        api.prevent_close();
+                    }
+                });
+            }
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             commands::launch_session,
             commands::stop_session,
+            commands::rename_session,
             commands::get_sessions,
             commands::refresh_sessions,
             commands::set_view_mode,
             commands::get_view_mode,
+            commands::exit_app,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -255,6 +255,20 @@ pub async fn launch_session(work_dir: String, state: State<'_, AppState>) -> Res
 }
 
 #[tauri::command]
+pub async fn rename_session(id: String, name: String, state: State<'_, AppState>) -> Result<(), String> {
+    let infos: Vec<SessionInfo> = {
+        let monitors = state.monitors.lock().unwrap();
+        let monitor = monitors.get(&id).ok_or("会话不存在")?;
+        monitor.lock().unwrap().name = name;
+        monitors.values()
+            .map(|m| m.lock().unwrap().to_info())
+            .collect()
+    };
+    let _ = state.app_handle.emit("session_update", &infos);
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn stop_session(id: String, state: State<'_, AppState>) -> Result<(), String> {
     let monitor = {
         let mut monitors = state.monitors.lock().unwrap();
@@ -331,4 +345,23 @@ pub fn get_view_mode(app: AppHandle) -> Result<String, String> {
     } else {
         Ok("card".to_string())
     }
+}
+
+
+#[tauri::command]
+pub fn exit_app(app: AppHandle) {
+    let state = app.state::<AppState>();
+    // Stop all PTY sessions — removing from HashMap drops PtyChild -> kills child process
+    let monitors: Vec<_> = {
+        let mut monitors = state.monitors.lock().unwrap();
+        monitors.drain().collect()
+    };
+    for (_id, monitor) in monitors {
+        monitor.lock().unwrap().stopped.store(true, Ordering::Relaxed);
+        // Dropping monitor drops PtyChild -> PTY master closed -> child process killed
+    }
+    if let Some(bar) = app.get_webview_window("bar") {
+        let _ = bar.hide();
+    }
+    app.exit(0);
 }

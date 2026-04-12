@@ -1,7 +1,9 @@
+import { useState, useRef } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 import { Session } from '../types';
 import { StatusDot } from './StatusDot';
 import { SilentBar } from './SilentBar';
-import { TerminalPreview } from './TerminalPreview';
+import { SessionInfo } from './SessionInfo';
 import './SessionCard.css';
 
 const STATE_LABELS: Record<Session['state'], string> = {
@@ -20,7 +22,6 @@ const STATE_CLASS: Record<Session['state'], string> = {
 
 interface SessionCardProps {
   session: Session;
-  prevLine?: string;
   onRemove?: (id: string) => void;
 }
 
@@ -33,7 +34,11 @@ function formatDuration(ms: number): string {
   return `${hrs}h`;
 }
 
-export function SessionCard({ session, prevLine, onRemove }: SessionCardProps) {
+export function SessionCard({ session, onRemove }: SessionCardProps) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const metaActive = session.state === 'running' ? '活跃' : session.state === 'confirm' ? '等待' : session.state === 'idle' ? '静默' : null;
   const metaValue = session.state !== 'offline'
     ? metaActive === '静默' || metaActive === '等待'
@@ -41,10 +46,58 @@ export function SessionCard({ session, prevLine, onRemove }: SessionCardProps) {
       : formatDuration(Date.now() - session.startedAt)
     : null;
 
+  const startEditing = () => {
+    setDraft(session.name);
+    setEditing(true);
+    setTimeout(() => inputRef.current?.select(), 0);
+  };
+
+  const commitRename = async () => {
+    const trimmed = draft.trim();
+    if (!trimmed || trimmed === session.name) {
+      setEditing(false);
+      return;
+    }
+    try {
+      await invoke('rename_session', { id: session.id, name: trimmed });
+      setEditing(false);
+    } catch (e) {
+      console.error('[SessionCard] rename failed:', e);
+    }
+  };
+
+  const cancelRename = () => {
+    setDraft(session.name);
+    setEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') commitRename();
+    else if (e.key === 'Escape') cancelRename();
+  };
+
   return (
     <div className={`card ${session.state}`}>
       <div className="card-head">
-        <span className="card-name">{session.name}</span>
+        {editing ? (
+          <input
+            ref={inputRef}
+            className="card-name-input"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commitRename}
+            onKeyDown={handleKeyDown}
+            autoFocus
+          />
+        ) : (
+          <span
+            className="card-name"
+            onDoubleClick={startEditing}
+            title="双击修改名称"
+          >
+            {session.name}
+          </span>
+        )}
         <span className="card-pid">
           {session.pid !== null ? `PID ${session.pid}` : '—'}
         </span>
@@ -65,11 +118,7 @@ export function SessionCard({ session, prevLine, onRemove }: SessionCardProps) {
         </span>
       </div>
       <SilentBar state={session.state} silentSecs={session.silentSecs} />
-      <TerminalPreview
-        lastLine={session.lastLine || '  (无输出)'}
-        prevLine={prevLine}
-        state={session.state}
-      />
+      <SessionInfo session={session} />
       <div className="meta">
         <span className="mi">CPU <span className="mv">{session.cpuPercent.toFixed(1)}%</span></span>
         {metaValue && (

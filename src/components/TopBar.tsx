@@ -1,4 +1,3 @@
-import { useState, useCallback } from 'react';
 import { Session } from '../types';
 import './TopBar.css';
 
@@ -26,89 +25,73 @@ interface TopBarProps {
 }
 
 export function TopBar({ sessions, onSessionClick, onBackToCard, isPinned, onTogglePin }: TopBarProps) {
-  const grouped = STATE_ORDER.reduce((acc, state) => {
-    acc[state] = sessions.filter((s) => s.state === state);
-    return acc;
-  }, {} as Record<Session['state'], Session[]>);
-
-  const handleCellClick = useCallback((list: Session[]) => {
-    if (list.length === 1) {
-      onSessionClick(list[0].id);
-    }
-  }, [onSessionClick]);
+  const ordered = [...sessions].sort((a, b) => {
+    const ai = STATE_ORDER.indexOf(a.state);
+    const bi = STATE_ORDER.indexOf(b.state);
+    if (ai !== bi) return ai - bi;
+    return a.id.localeCompare(b.id);
+  });
 
   return (
     <div className="bar-mode">
       {/* Drag handle */}
       <div className="bar-drag-handle" onMouseDown={startDrag}>
-        <svg viewBox="0 0 12 12" fill="currentColor">
-          <circle cx="3" cy="3" r="1.2" />
-          <circle cx="9" cy="3" r="1.2" />
-          <circle cx="3" cy="6" r="1.2" />
-          <circle cx="9" cy="6" r="1.2" />
-          <circle cx="3" cy="9" r="1.2" />
-          <circle cx="9" cy="9" r="1.2" />
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.4">
+          <line x1="4" y1="6" x2="16" y2="6" />
+          <line x1="4" y1="10" x2="16" y2="10" />
+          <line x1="4" y1="14" x2="16" y2="14" />
         </svg>
       </div>
 
-      {/* State columns */}
-      {STATE_ORDER.map((state) => {
-        const list = grouped[state];
-        const count = list.length;
-        const primary = list[0];
-
-        return (
-          <div key={state} className="bar-col">
+      {/* Scrollable session tiles */}
+      <div className="bar-scroll-container">
+        <div className="bar-tiles">
+          {ordered.map((session) => (
             <div
-              className={`bar-cell ${count === 0 ? 'bar-cell--empty' : ''}`}
-              onClick={() => handleCellClick(list)}
+              key={session.id}
+              className={`bar-tile bar-tile--${session.state}`}
+              onClick={() => onSessionClick(session.id)}
             >
-              <span className={`bar-dot bar-dot--${count === 0 ? 'empty' : state}`} />
-              {count === 0 ? (
-                <span className="bar-label-empty">无</span>
-              ) : (
-                <>
-                  <span className="bar-name">{primary?.name}</span>
-                  <span className={`bar-state-label bar-state-label--${state}`}>
-                    {STATE_LABELS[state]}
-                  </span>
-                  {count > 1 && (
-                    <span className={`bar-count bar-count--${state}`}>{count}</span>
-                  )}
-                </>
-              )}
+              <span className={`bar-dot bar-dot--${session.state}`} />
+              <span className="bar-name">{session.name}</span>
+              <span className="bar-divider" />
+              <span className={`bar-state-label bar-state-label--${session.state}`}>
+                {STATE_LABELS[session.state]}
+              </span>
             </div>
-          </div>
-        );
-      })}
+          ))}
+        </div>
+      </div>
+      {/* Right fade — outside scroll container so it stays fixed */}
+      <div className="bar-edge bar-edge--right" />
 
       {/* Right-side buttons */}
       {onBackToCard && (
         <div className="bar-right">
           <div
-            className="bar-back"
+            className="bar-btn"
             onClick={onBackToCard}
             role="button"
             tabIndex={0}
             title="切换到卡片视图"
           >
-            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.2">
-              <rect x="0.5" y="0.5" width="4.5" height="4.5" rx="1" />
-              <rect x="7" y="0.5" width="4.5" height="4.5" rx="1" />
-              <rect x="0.5" y="7" width="4.5" height="4.5" rx="1" />
-              <rect x="7" y="7" width="4.5" height="4.5" rx="1" />
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5">
+              <rect x="2" y="2" width="6.5" height="6.5" rx="1.5" />
+              <rect x="11.5" y="2" width="6.5" height="6.5" rx="1.5" />
+              <rect x="2" y="11.5" width="6.5" height="6.5" rx="1.5" />
+              <rect x="11.5" y="11.5" width="6.5" height="6.5" rx="1.5" />
             </svg>
           </div>
           {onTogglePin && (
             <div
-              className={`bar-pin ${isPinned ? 'bar-pin--active' : ''}`}
+              className={`bar-btn ${isPinned ? 'bar-btn--active' : ''}`}
               onClick={onTogglePin}
               role="button"
               tabIndex={0}
               title={isPinned ? '取消置顶' : '置顶'}
             >
-              <svg viewBox="0 0 12 12" fill="currentColor">
-                <path d="M7 1a1 1 0 011 1v.586l1.293 1.293a.5.5 0 01-.293.853L8 4.414V9.5a.5.5 0 01-.854.354l-2-2A.5.5 0 015 7.5V4.414l-.707-.707a.5.5 0 010-.707l1-1A1 1 0 016 2h1v1.586l-1 1A.5.5 0 012 6.414V9.5a.5.5 0 01-.146.354l-2 2A.5.5 0 01-.208.896L.5 12.5l.146.051a.5.5 0 00.708-.354V10a.5.5 0 01.146-.354l2-2A.5.5 0 003.5 7.5V6.414l.707.707a.5.5 0 010 .707l-1 1V11a1 1 0 001 1v1H2.5l-.146-.051a1.5 1.5 0 010-1.898l2.792-2.792A.5.5 0 005.5 5.5V4a.5.5 0 01.146-.354l1-1V3H7z"/>
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path d="M12 2.5a1.5 1.5 0 011.5 1.5v1.793l.854.854a.5.5 0 00.353.146H15.5a1 1 0 011 1v1a1 1 0 01-1 1h-1.5l-.854.854a.5.5 0 01-.853-.354L12.5 9.707V11a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1.293l-.854-.854a.5.5 0 01.353-.853H9a1 1 0 011-1h.793l.647-.647a.5.5 0 00.353-.853L11 4.5V3A1.5 1.5 0 0112.5 1.5h.5V2.5H12zM5 15l5-5 5 5v2H5v-2z"/>
               </svg>
             </div>
           )}

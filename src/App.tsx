@@ -1,7 +1,8 @@
 // App.tsx — Main window: macOS style
-import { useState, useCallback } from 'react';
-import { open } from '@tauri-apps/plugin-dialog';
+import { useState, useCallback, useEffect } from 'react';
+import { open, ask } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import { useSessions } from './hooks/useSessions';
 import { useLaunchSession } from './hooks/useLaunchSession';
 import { ViewToggle } from './components/ViewToggle';
@@ -15,6 +16,22 @@ export default function App() {
   const [localError, setLocalError] = useState<string | null>(null);
 
   const allError = localError || error;
+
+  // Intercept window close and show confirmation
+  useEffect(() => {
+    const win = getCurrentWindow();
+    const handler = () => {
+      ask('确定要退出 CC Monitor 吗？', {
+        title: '退出确认',
+        kind: 'warning',
+      }).then((confirmed) => {
+        if (confirmed) {
+          invoke('exit_app').catch(() => {});
+        }
+      });
+    };
+    win.onCloseRequested(handler);
+  }, []);
 
   const handleAddClick = useCallback(async () => {
     try {

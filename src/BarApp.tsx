@@ -52,6 +52,7 @@ export default function BarApp() {
     }
   }, [isPinned]);
 
+
   return (
     <div
       style={{

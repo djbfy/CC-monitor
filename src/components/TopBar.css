@@ -1,19 +1,59 @@
-/* TopBar.css — macOS fluid rounded bar */
+/* ============================================================
+   TopBar — "Dark Glass" Redesign
+   Premium frosted glass bar with luminous state indicators
+   ============================================================ */
+
+:root {
+  /* Fast spring easing */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* ── Bar shell ── */
 .bar-mode {
   display: flex;
   align-items: stretch;
   height: 44px;
-  box-sizing: border-box;
-  flex-shrink: 0;
-  position: relative;
   width: 100%;
-  overflow: visible;
-  background: var(--color-bg-surface);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.07) 0%,
+      rgba(255,255,255,0.03) 60%,
+      rgba(255,255,255,0.01) 100%
+    ),
+    rgba(28, 28, 34, 0.72);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.04) inset,
+    0 0 40px rgba(0,0,0,0.3);
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
 }
 
-/* Drag handle */
+/* Subtle top inner highlight */
+.bar-mode::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.12) 20%,
+    rgba(255,255,255,0.12) 80%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ── Drag handle ── */
 .bar-drag-handle {
   display: flex;
   align-items: center;
@@ -21,115 +61,250 @@
   width: 44px;
   height: 100%;
   flex-shrink: 0;
-  color: var(--color-text-tertiary);
   cursor: grab;
   user-select: none;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.2s var(--ease-out),
+    color 0.2s var(--ease-out);
+  color: rgba(255,255,255,0.25);
   -webkit-app-region: no-drag;
 }
 
 .bar-drag-handle:hover {
-  background: var(--color-bg-hover);
-  color: var(--color-text-secondary);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.5);
 }
 
 .bar-drag-handle:active {
   cursor: grabbing;
+  background: rgba(255,255,255,0.04);
 }
 
 .bar-drag-handle svg {
-  width: 18px;
-  height: 18px;
-  opacity: 0.45;
+  width: 20px;
+  height: 20px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
 }
 
-/* State columns — no hard borders, soft separators */
-.bar-col {
+.bar-drag-handle:hover svg {
+  opacity: 0.9;
+}
+
+/* ── Scroll container ── */
+.bar-scroll-container {
   flex: 1;
+  min-width: 0;
+  height: 44px;
+  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: x proximity;
+  touch-action: pan-x;
+}
+
+.bar-scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Fade edges — hint there's more content */
+.bar-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 60px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.bar-edge--right {
+  right: 88px;
+  background: linear-gradient(90deg, transparent 0%, rgba(28,28,34,0.7) 100%);
+}
+
+/* ── Tile strip ── */
+.bar-tiles {
   display: flex;
   align-items: center;
-  min-width: 0;
   height: 100%;
-  position: relative;
+  padding: 0 8px;
+  gap: 4px;
+  width: max-content;
 }
 
-/* Soft vertical separator between columns */
-.bar-col + .bar-col::before {
+/* ── Individual tile ── */
+.bar-tile {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 9px;
+  flex-shrink: 0;
+  cursor: pointer;
+  scroll-snap-align: start;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition:
+    background 0.25s var(--ease-out),
+    border-color 0.25s var(--ease-out),
+    transform 0.25s var(--ease-spring),
+    box-shadow 0.25s var(--ease-out);
+  animation: tile-enter 0.4s var(--ease-out) both;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle shimmer on the tile */
+.bar-tile::before {
   content: '';
   position: absolute;
-  left: 0;
-  top: 20%;
-  height: 60%;
-  width: 1px;
-  background: var(--color-border-subtle);
-  opacity: 0.6;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0.06) 0%,
+    transparent 50%
+  );
+  opacity: 0;
+  transition: opacity 0.25s;
+  border-radius: inherit;
+  pointer-events: none;
 }
 
-/* Bar cells */
-.bar-cell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 16px;
-  height: 100%;
-  width: 100%;
-  min-width: 0;
-  cursor: pointer;
-  transition: background 0.15s;
-  box-sizing: border-box;
-  overflow: hidden;
-  border-radius: 10px;
-  margin: 4px 3px;
+.bar-tile:hover {
+  background: rgba(255,255,255,0.09);
+  border-color: rgba(255,255,255,0.12);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow:
+    0 4px 16px rgba(0,0,0,0.3),
+    0 1px 4px rgba(0,0,0,0.2),
+    0 0 0 1px rgba(255,255,255,0.05) inset;
 }
 
-.bar-cell:hover {
-  background: var(--color-bg-hover);
+.bar-tile:hover::before {
+  opacity: 1;
 }
 
-.bar-cell--empty {
-  cursor: default;
+.bar-tile:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 0.1s;
 }
 
-/* Status dots */
+/* Tile state accent border on hover */
+.bar-tile--running:hover  { border-color: rgba(48,209,88,0.3); box-shadow: 0 4px 16px rgba(0,0,0,0.3), 0 0 12px var(--color-running-glow); }
+.bar-tile--confirm:hover  { border-color: rgba(255,159,10,0.3); box-shadow: 0 4px 16px rgba(0,0,0,0.3), 0 0 12px var(--color-confirm-glow); }
+.bar-tile--idle:hover     { border-color: rgba(10,132,255,0.3); box-shadow: 0 4px 16px rgba(0,0,0,0.3), 0 0 12px var(--color-idle-glow); }
+.bar-tile--offline:hover  { border-color: rgba(99,99,102,0.3); }
+
+@keyframes tile-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.bar-tile:nth-child(1) { animation-delay: 0ms; }
+.bar-tile:nth-child(2) { animation-delay: 30ms; }
+.bar-tile:nth-child(3) { animation-delay: 60ms; }
+.bar-tile:nth-child(4) { animation-delay: 90ms; }
+.bar-tile:nth-child(5) { animation-delay: 120ms; }
+.bar-tile:nth-child(6) { animation-delay: 150ms; }
+.bar-tile:nth-child(7) { animation-delay: 180ms; }
+.bar-tile:nth-child(8) { animation-delay: 210ms; }
+
+/* ── Status dot ── */
 .bar-dot {
-  width: 9px;
-  height: 9px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
+  position: relative;
+  transition: transform 0.25s var(--ease-spring);
 }
 
-.bar-dot--running { background: var(--color-running); box-shadow: 0 0 5px var(--color-running-glow); }
-.bar-dot--confirm { background: var(--color-confirm); box-shadow: 0 0 5px var(--color-confirm-glow); }
-.bar-dot--idle    { background: var(--color-idle); box-shadow: 0 0 5px var(--color-idle-glow); }
-.bar-dot--offline { background: var(--color-offline); }
-
-.bar-dot-empty {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.1);
-  flex-shrink: 0;
+.bar-tile:hover .bar-dot {
+  transform: scale(1.2);
 }
 
-/* Session name */
+.bar-dot--running {
+  background: var(--color-running);
+  box-shadow: 0 0 0 2px rgba(48,209,88,0.2), 0 0 8px var(--color-running-glow);
+  animation: pulse-running 2.4s ease-in-out infinite;
+}
+
+.bar-dot--confirm {
+  background: var(--color-confirm);
+  box-shadow: 0 0 0 2px rgba(255,159,10,0.2), 0 0 8px var(--color-confirm-glow);
+  animation: pulse-confirm 1.8s ease-in-out infinite;
+}
+
+.bar-dot--idle {
+  background: var(--color-idle);
+  box-shadow: 0 0 0 2px rgba(10,132,255,0.2), 0 0 8px var(--color-idle-glow);
+}
+
+.bar-dot--offline {
+  background: #48484A;
+  box-shadow: none;
+}
+
+@keyframes pulse-running {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(48,209,88,0.2), 0 0 8px var(--color-running-glow); }
+  50%       { box-shadow: 0 0 0 3px rgba(48,209,88,0.15), 0 0 14px var(--color-running-glow); }
+}
+
+@keyframes pulse-confirm {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(255,159,10,0.2), 0 0 8px var(--color-confirm-glow); }
+  50%       { box-shadow: 0 0 0 3px rgba(255,159,10,0.15), 0 0 14px var(--color-confirm-glow); }
+}
+
+/* ── Session name ── */
 .bar-name {
-  font-family: var(--font-display);
-  font-size: 13px;
+  font-family: 'Outfit', 'IBM Plex Sans', system-ui, sans-serif;
+  font-size: 12.5px;
   font-weight: 500;
-  color: var(--color-text-primary);
+  color: rgba(255,255,255,0.88);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
-  flex: 1;
+  max-width: 100px;
+  letter-spacing: -0.01em;
+  transition: color 0.2s;
 }
 
-/* State label */
-.bar-state-label {
-  font-family: var(--font-display);
-  font-size: 12px;
-  font-weight: 500;
+.bar-tile:hover .bar-name {
+  color: rgba(255,255,255,0.95);
+}
+
+/* ── Divider ── */
+.bar-divider {
+  width: 1px;
+  height: 12px;
+  background: rgba(255,255,255,0.12);
   flex-shrink: 0;
+  margin: 0 1px;
+}
+
+/* ── State label ── */
+.bar-state-label {
+  font-family: 'Outfit', 'IBM Plex Sans', system-ui, sans-serif;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.bar-tile:hover .bar-state-label {
+  opacity: 1;
 }
 
 .bar-state-label--running { color: var(--color-running-text); }
@@ -137,107 +312,58 @@
 .bar-state-label--idle    { color: var(--color-idle-text); }
 .bar-state-label--offline { color: var(--color-offline-text); }
 
-.bar-label-empty {
-  font-family: var(--font-display);
-  font-size: 12px;
-  color: var(--color-text-tertiary);
-}
-
-/* Count pill */
-.bar-count {
-  font-family: var(--font-display);
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 10px;
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 22px;
-  height: 20px;
-  box-sizing: border-box;
-}
-
-.bar-count--running { background: var(--color-running-dim); color: var(--color-running-text); }
-.bar-count--confirm { background: var(--color-confirm-dim); color: var(--color-confirm-text); }
-.bar-count--idle    { background: var(--color-idle-dim); color: var(--color-idle-text); }
-.bar-count--offline { background: var(--color-offline-dim); color: var(--color-offline-text); }
-
-/* Dropdown */
-.bar-dropdown {
-  position: absolute;
-  background: var(--color-bg-elevated);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-elevated);
-  z-index: 1000;
-  min-width: 200px;
-  overflow: hidden;
-}
-
-.bar-dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 16px;
-  cursor: pointer;
-  transition: background 0.1s;
-}
-
-.bar-dropdown-item:hover {
-  background: var(--color-bg-hover);
-}
-
-.bar-dropdown-name {
-  font-family: var(--font-display);
-  font-size: 13px;
-  color: var(--color-text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Right-side buttons — back & pin */
+/* ── Right-side buttons ── */
 .bar-right {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   height: 100%;
   flex-shrink: 0;
+  padding: 0 4px;
+  gap: 2px;
 }
 
-.bar-back,
-.bar-pin {
+.bar-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 100%;
-  padding: 0;
+  width: 36px;
+  height: 32px;
+  border-radius: 7px;
   cursor: pointer;
-  color: var(--color-text-tertiary);
+  color: rgba(255,255,255,0.3);
+  transition:
+    background 0.2s var(--ease-out),
+    color 0.2s var(--ease-out),
+    transform 0.2s var(--ease-spring);
   flex-shrink: 0;
-  transition: background 0.15s, color 0.15s;
 }
 
-.bar-back:hover,
-.bar-pin:hover {
-  background: var(--color-bg-hover);
-  color: var(--color-text-secondary);
+.bar-btn:hover {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.65);
+  transform: translateY(-1px);
 }
 
-.bar-pin--active {
-  color: var(--color-idle-text);
+.bar-btn:active {
+  transform: translateY(0) scale(0.95);
+  transition-duration: 0.1s;
 }
 
-.bar-pin--active:hover {
-  background: var(--color-bg-hover);
+.bar-btn--active {
+  color: rgba(10,132,255,0.85);
 }
 
-.bar-back svg,
-.bar-pin svg {
+.bar-btn--active:hover {
+  background: rgba(10,132,255,0.12);
+  color: #0A84FF;
+}
+
+.bar-btn--close:hover {
+  background: rgba(255, 69, 58, 0.15);
+  color: #FF453A;
+}
+
+.bar-btn svg {
   width: 16px;
   height: 16px;
 }

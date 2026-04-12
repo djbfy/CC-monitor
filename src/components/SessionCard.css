@@ -57,6 +57,25 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 70%;
+  cursor: text;
+}
+
+.card-name:hover {
+  color: rgba(255,255,255,0.95);
+}
+
+.card-name-input {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(10,132,255,0.4);
+  border-radius: 5px;
+  padding: 1px 6px;
+  outline: none;
+  max-width: 70%;
+  box-shadow: 0 0 0 2px rgba(10,132,255,0.15);
 }
 
 .card-pid {
