@@ -3,10 +3,14 @@ import { Session } from '../types';
 import './TopBar.css';
 
 const startDrag = () => {
+  console.log('[TopBar] startDrag called');
   import('@tauri-apps/api/window').then(({ getCurrentWindow }) => {
+    console.log('[TopBar] getCurrentWindow ready');
     getCurrentWindow().startDragging().catch((e: unknown) => {
       console.error('startDragging failed:', e);
     });
+  }).catch((e: unknown) => {
+    console.error('[TopBar] dynamic import failed:', e);
   });
 };
 
@@ -29,6 +33,7 @@ interface TopBarProps {
 
 export function TopBar({ sessions, onSessionClick, onBackToCard, isPinned, onTogglePin }: TopBarProps) {
   const [openDropdown, setOpenDropdown] = useState<Session['state'] | null>(null);
+  console.log('[TopBar] render, sessions:', sessions.length, 'openDropdown:', openDropdown);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -59,6 +64,15 @@ export function TopBar({ sessions, onSessionClick, onBackToCard, isPinned, onTog
       onSessionClick(list[0].id);
     }
   }, [onSessionClick]);
+
+  // Debug: listen on window to see if mouse events ever arrive
+  useEffect(() => {
+    const onMouseOver = (e: MouseEvent) => {
+      console.log('[window] mouseover target:', (e.target as HTMLElement).className, 'id:', (e.target as HTMLElement).id);
+    };
+    window.addEventListener('mouseover', onMouseOver);
+    return () => window.removeEventListener('mouseover', onMouseOver);
+  }, []);
 
   const grouped = STATE_ORDER.reduce((acc, state) => {
     acc[state] = sessions.filter((s) => s.state === state);
