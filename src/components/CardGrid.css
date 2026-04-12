@@ -1,20 +1,41 @@
+/* CardGrid.css — macOS Sonoma Dark Style */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--spacing-md);
 }
 
 .add-card {
-  opacity: 0.5;
+  background: transparent;
+  border: 1.5px dashed var(--color-border);
+  border-radius: var(--radius-lg);
   cursor: default;
-  border-style: dashed;
+  transition: border-color 0.15s, background 0.15s;
+  min-height: 100px;
+}
+
+.add-card:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent-dim);
 }
 
 .add-inner {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 90px;
-  font-size: 11px;
+  gap: var(--spacing-sm);
+}
+
+.add-inner-icon {
+  font-size: 24px;
   color: var(--color-text-tertiary);
+  line-height: 1;
+}
+
+.add-inner-text {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  text-align: center;
 }

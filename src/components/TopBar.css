@@ -1,4 +1,4 @@
-/* TopBar.css — Soft Charcoal Dark Theme */
+/* TopBar.css — macOS Sonoma Dark Style */
 .bar-drag-handle {
   display: flex;
   align-items: center;
@@ -10,21 +10,23 @@
   cursor: grab;
   user-select: none;
   border-right: 1px solid var(--color-border-subtle);
-  transition: color 0.12s, background 0.12s;
+  transition: background 0.12s, color 0.12s;
 }
 
 .bar-drag-handle:hover {
   color: var(--color-text-secondary);
-  background: var(--color-bg-hover);
 }
 
 .bar-drag-handle svg {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
+  opacity: 0.7;
 }
 
 .bar-mode {
   background: var(--color-bg-surface);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
   border-bottom: 1px solid var(--color-border-subtle);
   display: flex;
   align-items: stretch;
@@ -72,21 +74,20 @@
   cursor: default;
 }
 
-/* Status dots — soft glow */
 .bar-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
 .bar-dot--running { background: var(--color-running); }
 .bar-dot--confirm { background: var(--color-confirm); }
-.bar-dot--idle { background: var(--color-idle); }
+.bar-dot--idle    { background: var(--color-idle); }
 .bar-dot--offline { background: var(--color-offline); }
 .bar-dot-empty {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--color-border);
   flex-shrink: 0;
@@ -113,7 +114,7 @@
 
 .bar-state-label--running { color: var(--color-running-text); }
 .bar-state-label--confirm { color: var(--color-confirm-text); }
-.bar-state-label--idle { color: var(--color-idle-text); }
+.bar-state-label--idle    { color: var(--color-idle-text); }
 .bar-state-label--offline { color: var(--color-offline-text); }
 
 .bar-label-empty {
@@ -139,12 +140,14 @@
 
 .bar-count--running { background: var(--color-running-dim); color: var(--color-running-text); }
 .bar-count--confirm { background: var(--color-confirm-dim); color: var(--color-confirm-text); }
-.bar-count--idle { background: var(--color-idle-dim); color: var(--color-idle-text); }
+.bar-count--idle    { background: var(--color-idle-dim); color: var(--color-idle-text); }
 .bar-count--offline { background: var(--color-offline-dim); color: var(--color-offline-text); }
 
 .bar-dropdown {
   position: fixed;
   background: var(--color-bg-elevated);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-elevated);
@@ -196,8 +199,8 @@
 }
 
 .bar-back svg {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
 }
 
 .bar-pin {

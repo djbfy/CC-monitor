@@ -1,6 +1,8 @@
-/* SessionCard.css — Soft Charcoal Dark Theme */
+/* SessionCard.css — macOS Sonoma Dark Style */
 .card {
-  background: var(--color-bg-surface);
+  background: var(--color-bg-elevated);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--spacing-md) var(--spacing-lg);
@@ -8,22 +10,22 @@
   transition:
     border-color 0.2s,
     box-shadow 0.2s,
-    transform 0.2s,
+    transform 0.18s,
     background 0.2s;
   position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow-card);
 }
 
-/* Top accent line per state */
+/* Top accent — macOS colored strip */
 .card::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
+  height: 3px;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  opacity: 0.8;
 }
 
 .card.running::before { background: var(--color-running); }
@@ -32,21 +34,17 @@
 .card.offline::before { background: var(--color-offline); }
 
 .card:hover {
-  background: var(--color-bg-elevated);
-  border-color: var(--color-border);
-  transform: translateY(-2px);
+  background: var(--color-bg-active);
+  border-color: var(--color-border-strong);
+  transform: translateY(-1px);
   box-shadow: var(--shadow-elevated);
 }
-
-.card.running:hover { border-color: rgba(46, 204, 113, 0.25); }
-.card.confirm:hover { border-color: rgba(245, 166, 35, 0.25); }
-.card.idle:hover { border-color: rgba(74, 144, 217, 0.25); }
 
 .card-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: 9px;
   position: relative;
 }
 
@@ -88,32 +86,32 @@
 }
 
 .card-remove:hover {
-  color: #FF6B6B;
+  color: #FF453A;
 }
 
 .status-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 9px;
 }
 
 .st {
   font-family: var(--font-display);
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.01em;
 }
 
-.st-run { color: var(--color-running-text); }
+.st-run  { color: var(--color-running-text); }
 .st-confirm { color: var(--color-confirm-text); }
 .st-idle { color: var(--color-idle-text); }
-.st-off { color: var(--color-offline-text); }
+.st-off  { color: var(--color-offline-text); }
 
 .meta {
   display: flex;
   gap: 14px;
-  margin-top: 10px;
+  margin-top: 9px;
 }
 
 .mi {

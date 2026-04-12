@@ -1,32 +1,31 @@
-/* ViewToggle.css — Midnight Command Center */
-.toolbar-right .toggle-wrap {
+/* ViewToggle.css — macOS Sonoma Dark Style */
+.toggle-wrap {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .toggle-label {
   font-family: var(--font-display);
   font-size: 11px;
   color: var(--color-text-tertiary);
-  letter-spacing: 0.04em;
 }
 
 .toggle {
   display: flex;
-  background: var(--color-bg-base);
+  background: rgba(0, 0, 0, 0.25);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
   padding: 2px;
   gap: 2px;
 }
 
 .toggle-btn {
   font-family: var(--font-display);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
-  padding: 5px 12px;
-  border-radius: 4px;
+  padding: 4px 14px;
+  border-radius: 6px;
   border: none;
   background: transparent;
   color: var(--color-text-tertiary);
@@ -35,17 +34,17 @@
   align-items: center;
   gap: 5px;
   transition: background 0.15s, color 0.15s;
+  -webkit-app-region: no-drag;
 }
 
 .toggle-btn:hover {
-  background: var(--color-bg-hover);
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
 }
 
 .toggle-btn.active {
   background: var(--color-bg-elevated);
   color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
 .toggle-btn svg {

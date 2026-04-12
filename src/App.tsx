@@ -1,4 +1,4 @@
-// App.tsx — Main window: always shows card mode
+// App.tsx — Main window: macOS style
 import { useState, useCallback } from 'react';
 import { open } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
@@ -9,10 +9,14 @@ import { CardGrid } from './components/CardGrid';
 import { ErrorToast } from './components/ErrorToast';
 import './App.css';
 
+const STATE_LABELS = ['运行中', '待确认', '休息中', '离线'] as const;
+const STATE_KEYS = ['running', 'confirm', 'idle', 'offline'] as const;
+
 export default function App() {
   const { sessions, error, refresh } = useSessions();
   const launchSession = useLaunchSession();
   const [localError, setLocalError] = useState<string | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
 
   const allError = localError || error;
 
@@ -60,10 +64,26 @@ export default function App() {
     invoke('set_view_mode', { mode: 'bar' }).catch(console.error);
   }, []);
 
+  // Group sessions by state
+  const grouped = STATE_KEYS.reduce((acc, key) => {
+    acc[key] = sessions.filter((s) => s.state === key);
+    return acc;
+  }, {} as Record<string, typeof sessions>);
+
+  const activeGroup = selectedGroup;
+
   return (
     <div className="root">
+      {/* macOS titlebar */}
       <div className="toolbar">
-        <span className="app-title">CC Monitor</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div className="window-dots">
+            <div className="dot-red" />
+            <div className="dot-yellow" />
+            <div className="dot-green" />
+          </div>
+          <span className="app-title">CC Monitor</span>
+        </div>
         <div className="toolbar-right">
           <button className="refresh-btn" onClick={handleRefresh} title="刷新列表">
             ↻
@@ -72,7 +92,8 @@ export default function App() {
         </div>
       </div>
 
-      <div className="mode-card">
+      {/* Main content area */}
+      <div className="content-area">
         <CardGrid sessions={sessions} onAddClick={handleAddClick} onRemoveSession={handleRemoveSession} />
       </div>
 

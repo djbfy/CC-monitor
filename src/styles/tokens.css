@@ -1,5 +1,5 @@
-/* Design tokens — Soft Charcoal Dark Theme */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Design tokens — macOS Sonoma Dark Style */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -9,65 +9,73 @@
 
 :root {
   /* Typography */
-  --font-display: 'Outfit', system-ui, sans-serif;
-  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Cascadia Code', monospace;
 
-  /* Background — soft charcoal (easy on eyes) */
-  --color-bg-base: #1a1d24;
-  --color-bg-surface: #22262f;
-  --color-bg-elevated: #2a2f3a;
-  --color-bg-hover: #323844;
+  /* Background — macOS dark surface layers */
+  --color-bg-base: #1e1e24;
+  --color-bg-surface: rgba(44, 44, 52, 0.55);
+  --color-bg-elevated: rgba(58, 58, 66, 0.6);
+  --color-bg-hover: rgba(70, 70, 80, 0.55);
+  --color-bg-active: rgba(85, 85, 95, 0.55);
 
   /* Text */
-  --color-text-primary: #E4E7EE;
-  --color-text-secondary: #9098AA;
-  --color-text-tertiary: #5C6370;
-  --color-text-disabled: #3E4450;
+  --color-text-primary: rgba(255, 255, 255, 0.92);
+  --color-text-secondary: rgba(255, 255, 255, 0.55);
+  --color-text-tertiary: rgba(255, 255, 255, 0.3);
+  --color-text-disabled: rgba(255, 255, 255, 0.18);
 
-  /* Borders */
-  --color-border: #353B48;
-  --color-border-subtle: #2C313C;
+  /* Borders — macOS style subtle separator */
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-subtle: rgba(255, 255, 255, 0.06);
+  --color-border-strong: rgba(255, 255, 255, 0.16);
 
-  /* State: Running — emerald */
-  --color-running: #2ECC71;
-  --color-running-dim: rgba(46, 204, 113, 0.12);
-  --color-running-glow: rgba(46, 204, 113, 0.25);
-  --color-running-text: #2ECC71;
+  /* Accent — macOS blue */
+  --color-accent: #0A84FF;
+  --color-accent-dim: rgba(10, 132, 255, 0.15);
+  --color-accent-glow: rgba(10, 132, 255, 0.3);
 
-  /* State: Confirm — warm amber */
-  --color-confirm: #F5A623;
-  --color-confirm-dim: rgba(245, 166, 35, 0.12);
-  --color-confirm-glow: rgba(245, 166, 35, 0.25);
-  --color-confirm-text: #F5A623;
+  /* State: Running — macOS green */
+  --color-running: #30D158;
+  --color-running-dim: rgba(48, 209, 88, 0.15);
+  --color-running-glow: rgba(48, 209, 88, 0.25);
+  --color-running-text: #30D158;
 
-  /* State: Idle — sky blue */
-  --color-idle: #4A90D9;
-  --color-idle-dim: rgba(74, 144, 217, 0.12);
-  --color-idle-glow: rgba(74, 144, 217, 0.25);
-  --color-idle-text: #4A90D9;
+  /* State: Confirm — macOS orange */
+  --color-confirm: #FF9F0A;
+  --color-confirm-dim: rgba(255, 159, 10, 0.15);
+  --color-confirm-glow: rgba(255, 159, 10, 0.25);
+  --color-confirm-text: #FF9F0A;
 
-  /* State: Offline — cool gray */
-  --color-offline: #6B7280;
-  --color-offline-dim: rgba(107, 114, 128, 0.1);
-  --color-offline-glow: rgba(107, 114, 128, 0.15);
-  --color-offline-text: #8B95A5;
+  /* State: Idle — macOS blue */
+  --color-idle: #0A84FF;
+  --color-idle-dim: rgba(10, 132, 255, 0.12);
+  --color-idle-glow: rgba(10, 132, 255, 0.25);
+  --color-idle-text: #0A84FF;
+
+  /* State: Offline — macOS gray */
+  --color-offline: #636366;
+  --color-offline-dim: rgba(99, 99, 102, 0.12);
+  --color-offline-text: #8E8E93;
 
   /* Layout */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
-  --spacing-md: 14px;
-  --spacing-lg: 20px;
+  --spacing-md: 12px;
+  --spacing-lg: 18px;
   --spacing-xl: 28px;
 
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
+  --radius-xl: 18px;
 
-  /* Shadows */
-  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.35);
-  --shadow-elevated: 0 6px 24px rgba(0, 0, 0, 0.4);
-  --shadow-glow-running: 0 0 14px var(--color-running-glow);
-  --shadow-glow-confirm: 0 0 14px var(--color-confirm-glow);
-  --shadow-glow-idle: 0 0 14px var(--color-idle-glow);
+  /* Shadows — macOS style (soft, layered) */
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.25);
+  --shadow-elevated: 0 8px 32px rgba(0,0,0,0.45), 0 1px 4px rgba(0,0,0,0.3);
+  --shadow-inset: inset 0 1px 0 rgba(255,255,255,0.06);
+
+  /* macOS vibrancy backdrop blur */
+  --blur: blur(20px) saturate(180%);
 }
