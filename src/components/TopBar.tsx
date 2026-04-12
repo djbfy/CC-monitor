@@ -46,6 +46,7 @@ export function TopBar({ sessions, onSessionClick, onBackToCard, isPinned, onTog
   }, [openDropdown]);
 
   const handleCellEnter = useCallback((state: Session['state'], list: Session[]) => {
+    console.log('[TopBar] handleCellEnter', state, 'list.length:', list.length);
     if (list.length > 1) {
       setOpenDropdown(state);
     }
@@ -147,16 +148,22 @@ export function TopBar({ sessions, onSessionClick, onBackToCard, isPinned, onTog
       </div>
 
       {/* Dropdown */}
-      {openDropdown !== null && grouped[openDropdown].length > 1 && (
-        <Dropdown
-          list={grouped[openDropdown]}
-          state={openDropdown}
-          onSelect={(id) => {
-            onSessionClick(id);
-            setOpenDropdown(null);
-          }}
-        />
-      )}
+      {openDropdown !== null ? (
+        (() => {
+          const count = grouped[openDropdown].length;
+          console.log('[TopBar] dropdown guard:', { openDropdown, count });
+          return count > 1 ? (
+            <Dropdown
+              list={grouped[openDropdown]}
+              state={openDropdown}
+              onSelect={(id) => {
+                onSessionClick(id);
+                setOpenDropdown(null);
+              }}
+            />
+          ) : null;
+        })()
+      ) : null}
     </>
   );
 }
@@ -174,14 +181,17 @@ function Dropdown({
 
   useEffect(() => {
     const barMode = document.querySelector('.bar-mode') as HTMLElement | null;
+    console.log('[Dropdown] effect running, state:', state, 'barMode found:', !!barMode);
     if (!barMode) return;
     const cols = barMode.querySelectorAll(':scope > .bar-col');
     const stateIndex = STATE_ORDER.indexOf(state);
+    console.log('[Dropdown] stateIndex:', stateIndex, 'cols.length:', cols.length);
     if (stateIndex < 0 || stateIndex >= cols.length) return;
     const targetCell = cols[stateIndex] as HTMLElement;
     if (!targetCell) return;
 
     const rect = targetCell.getBoundingClientRect();
+    console.log('[Dropdown] pos:', { top: rect.bottom + 6, left: rect.left, width: Math.max(rect.width, 180) });
     setPos({
       top: rect.bottom + 6,
       left: rect.left,
