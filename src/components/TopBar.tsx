@@ -30,11 +30,9 @@ interface TopBarProps {
 export function TopBar({ sessions, onSessionClick, onBackToCard, isPinned, onTogglePin }: TopBarProps) {
   const [openDropdown, setOpenDropdown] = useState<Session['state'] | null>(null);
 
-  // Close dropdown when clicking outside (use React event on document via useEffect)
   useEffect(() => {
     if (openDropdown === null) return;
 
-    // Small delay to avoid immediate close when clicking to OPEN the dropdown
     const timeout = setTimeout(() => {
       const handler = (e: MouseEvent) => {
         const dropdown = document.querySelector('.bar-dropdown');
@@ -50,7 +48,6 @@ export function TopBar({ sessions, onSessionClick, onBackToCard, isPinned, onTog
 
     return () => {
       clearTimeout(timeout);
-      // Cleanup listeners are handled by React's event system
     };
   }, [openDropdown]);
 
@@ -62,7 +59,6 @@ export function TopBar({ sessions, onSessionClick, onBackToCard, isPinned, onTog
     }
   }, [onSessionClick]);
 
-  // Group sessions by state
   const grouped = STATE_ORDER.reduce((acc, state) => {
     acc[state] = sessions.filter((s) => s.state === state);
     return acc;
@@ -70,10 +66,8 @@ export function TopBar({ sessions, onSessionClick, onBackToCard, isPinned, onTog
 
   return (
     <>
-      <div
-        className="bar-mode"
-      >
-        {/* Drag handle — non-interactive, positioned at far left */}
+      <div className="bar-mode">
+        {/* Drag handle */}
         <div className="bar-drag-handle" onMouseDown={startDrag}>
           <svg viewBox="0 0 12 12" fill="currentColor">
             <circle cx="3" cy="3" r="1.2" />
@@ -85,6 +79,7 @@ export function TopBar({ sessions, onSessionClick, onBackToCard, isPinned, onTog
           </svg>
         </div>
 
+        {/* State columns */}
         {STATE_ORDER.map((state) => {
           const list = grouped[state];
           const count = list.length;
@@ -115,39 +110,41 @@ export function TopBar({ sessions, onSessionClick, onBackToCard, isPinned, onTog
           );
         })}
 
+        {/* Right-side buttons */}
         {onBackToCard && (
-          <div
-            className="bar-back"
-            onClick={onBackToCard}
-            role="button"
-            tabIndex={0}
-            title="切换到卡片视图"
-          >
-            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.2">
-              <rect x="0.5" y="0.5" width="4.5" height="4.5" rx="1" />
-              <rect x="7" y="0.5" width="4.5" height="4.5" rx="1" />
-              <rect x="0.5" y="7" width="4.5" height="4.5" rx="1" />
-              <rect x="7" y="7" width="4.5" height="4.5" rx="1" />
-            </svg>
-          </div>
-        )}
-
-        {onTogglePin && (
-          <div
-            className={`bar-pin ${isPinned ? 'bar-pin--active' : ''}`}
-            onClick={onTogglePin}
-            role="button"
-            tabIndex={0}
-            title={isPinned ? '取消置顶' : '置顶'}
-          >
-            <svg viewBox="0 0 12 12" fill="currentColor">
-              <path d="M7 1a1 1 0 011 1v.586l1.293 1.293a.5.5 0 01-.293.853L8 4.414V9.5a.5.5 0 01-.854.354l-2-2A.5.5 0 015 7.5V4.414l-.707-.707a.5.5 0 010-.707l1-1A1 1 0 016 2h1v1.586l-1 1A.5.5 0 012 6.414V9.5a.5.5 0 01-.146.354l-2 2A.5.5 0 01-.208.896L.5 12.5l.146.051a.5.5 0 00.708-.354V10a.5.5 0 01.146-.354l2-2A.5.5 0 003.5 7.5V6.414l.707.707a.5.5 0 010 .707l-1 1V11a1 1 0 001 1v1H2.5l-.146-.051a1.5 1.5 0 010-1.898l2.792-2.792A.5.5 0 005.5 5.5V4a.5.5 0 01.146-.354l1-1V3H7z"/>
-            </svg>
+          <div className="bar-right">
+            <div
+              className="bar-back"
+              onClick={onBackToCard}
+              role="button"
+              tabIndex={0}
+              title="切换到卡片视图"
+            >
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.2">
+                <rect x="0.5" y="0.5" width="4.5" height="4.5" rx="1" />
+                <rect x="7" y="0.5" width="4.5" height="4.5" rx="1" />
+                <rect x="0.5" y="7" width="4.5" height="4.5" rx="1" />
+                <rect x="7" y="7" width="4.5" height="4.5" rx="1" />
+              </svg>
+            </div>
+            {onTogglePin && (
+              <div
+                className={`bar-pin ${isPinned ? 'bar-pin--active' : ''}`}
+                onClick={onTogglePin}
+                role="button"
+                tabIndex={0}
+                title={isPinned ? '取消置顶' : '置顶'}
+              >
+                <svg viewBox="0 0 12 12" fill="currentColor">
+                  <path d="M7 1a1 1 0 011 1v.586l1.293 1.293a.5.5 0 01-.293.853L8 4.414V9.5a.5.5 0 01-.854.354l-2-2A.5.5 0 015 7.5V4.414l-.707-.707a.5.5 0 010-.707l1-1A1 1 0 016 2h1v1.586l-1 1A.5.5 0 012 6.414V9.5a.5.5 0 01-.146.354l-2 2A.5.5 0 01-.208.896L.5 12.5l.146.051a.5.5 0 00.708-.354V10a.5.5 0 01.146-.354l2-2A.5.5 0 003.5 7.5V6.414l.707.707a.5.5 0 010 .707l-1 1V11a1 1 0 001 1v1H2.5l-.146-.051a1.5 1.5 0 010-1.898l2.792-2.792A.5.5 0 005.5 5.5V4a.5.5 0 01.146-.354l1-1V3H7z"/>
+                </svg>
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      {/* Dropdown — position: fixed to bypass all overflow clips */}
+      {/* Dropdown */}
       {openDropdown !== null && grouped[openDropdown].length > 1 && (
         <Dropdown
           list={grouped[openDropdown]}
@@ -171,7 +168,7 @@ function Dropdown({
   state: Session['state'];
   onSelect: (id: string) => void;
 }) {
-  const [pos, setPos] = useState({ top: 0, left: 0, width: 140 });
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 160 });
 
   useEffect(() => {
     const barMode = document.querySelector('.bar-mode');
@@ -186,7 +183,7 @@ function Dropdown({
     setPos({
       top: rect.bottom + 4,
       left: rect.left,
-      width: Math.max(rect.width, 140),
+      width: Math.max(rect.width, 160),
     });
   }, [state]);
 

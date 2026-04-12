@@ -22,7 +22,7 @@
       {
         "label": "bar",
         "title": "CC Monitor Bar",
-        "width": 600,
+        "width": 800,
         "height": 44,
         "decorations": false,
         "alwaysOnTop": true,
