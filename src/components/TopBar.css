@@ -166,7 +166,7 @@
 
 /* Dropdown */
 .bar-dropdown {
-  position: fixed;
+  position: absolute;
   background: var(--color-bg-elevated);
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
