@@ -1,6 +1,6 @@
-/* TerminalPreview.css — Midnight Command Center */
+/* TerminalPreview.css — Soft Charcoal Dark Theme */
 .term {
-  background: var(--color-bg-base);
+  background: var(--color-bg-elevated);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-sm);
   padding: 8px 10px;
@@ -10,7 +10,7 @@
 
 .tl {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--color-text-secondary);
   line-height: 1.65;
   white-space: pre;

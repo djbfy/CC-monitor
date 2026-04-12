@@ -1,4 +1,4 @@
-/* SessionCard.css — Midnight Command Center */
+/* SessionCard.css — Soft Charcoal Dark Theme */
 .card {
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
@@ -14,7 +14,7 @@
   overflow: hidden;
 }
 
-/* Subtle top accent line per state */
+/* Top accent line per state */
 .card::before {
   content: '';
   position: absolute;
@@ -23,13 +23,12 @@
   right: 0;
   height: 2px;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  opacity: 0.7;
-  transition: opacity 0.2s;
+  opacity: 0.8;
 }
 
-.card.running::before { background: var(--color-running); box-shadow: 0 0 8px var(--color-running-glow); }
-.card.confirm::before { background: var(--color-confirm); box-shadow: 0 0 8px var(--color-confirm-glow); }
-.card.idle::before { background: var(--color-idle); box-shadow: 0 0 8px var(--color-idle-glow); }
+.card.running::before { background: var(--color-running); }
+.card.confirm::before { background: var(--color-confirm); }
+.card.idle::before { background: var(--color-idle); }
 .card.offline::before { background: var(--color-offline); }
 
 .card:hover {
@@ -39,9 +38,9 @@
   box-shadow: var(--shadow-elevated);
 }
 
-.card.running:hover { box-shadow: var(--shadow-elevated), var(--shadow-glow-running); border-color: rgba(0, 229, 160, 0.3); }
-.card.confirm:hover { box-shadow: var(--shadow-elevated), var(--shadow-glow-confirm); border-color: rgba(255, 181, 71, 0.3); }
-.card.idle:hover { box-shadow: var(--shadow-elevated), var(--shadow-glow-idle); border-color: rgba(77, 158, 255, 0.3); }
+.card.running:hover { border-color: rgba(46, 204, 113, 0.25); }
+.card.confirm:hover { border-color: rgba(245, 166, 35, 0.25); }
+.card.idle:hover { border-color: rgba(74, 144, 217, 0.25); }
 
 .card-head {
   display: flex;
@@ -92,7 +91,6 @@
   color: #FF6B6B;
 }
 
-/* Status row */
 .status-row {
   display: flex;
   align-items: center;
@@ -104,7 +102,7 @@
   font-family: var(--font-display);
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
 }
 
 .st-run { color: var(--color-running-text); }
@@ -112,7 +110,6 @@
 .st-idle { color: var(--color-idle-text); }
 .st-off { color: var(--color-offline-text); }
 
-/* Meta info row */
 .meta {
   display: flex;
   gap: 14px;

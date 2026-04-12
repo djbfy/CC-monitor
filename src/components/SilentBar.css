@@ -1,4 +1,4 @@
-/* SilentBar.css — Midnight Command Center */
+/* SilentBar.css — Soft Charcoal Dark Theme */
 .silent-row {
   display: flex;
   align-items: center;
@@ -9,7 +9,7 @@
 .bar-track {
   flex: 1;
   height: 3px;
-  background: var(--color-bg-base);
+  background: var(--color-bg-elevated);
   border-radius: 2px;
   overflow: hidden;
   border: 1px solid var(--color-border-subtle);

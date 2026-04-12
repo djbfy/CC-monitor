@@ -1,4 +1,4 @@
-/* StatusDot.css — Midnight Command Center */
+/* StatusDot.css — Soft Charcoal Dark Theme */
 .dot {
   width: 8px;
   height: 8px;
@@ -8,19 +8,19 @@
 
 .dot-running {
   background: var(--color-running);
-  box-shadow: 0 0 6px var(--color-running-glow);
-  animation: pulse-dot 2s infinite;
+  box-shadow: 0 0 5px var(--color-running-glow);
+  animation: pulse-dot 2.4s infinite;
 }
 
 .dot-confirm {
   background: var(--color-confirm);
-  box-shadow: 0 0 6px var(--color-confirm-glow);
-  animation: pulse-alert 1.1s infinite;
+  box-shadow: 0 0 5px var(--color-confirm-glow);
+  animation: pulse-alert 1.4s infinite;
 }
 
 .dot-idle {
   background: var(--color-idle);
-  box-shadow: 0 0 5px var(--color-idle-glow);
+  box-shadow: 0 0 4px var(--color-idle-glow);
 }
 
 .dot-offline {
@@ -28,11 +28,11 @@
 }
 
 @keyframes pulse-dot {
-  0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--color-running-glow); }
-  50% { opacity: 0.4; box-shadow: 0 0 2px var(--color-running-glow); }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
 }
 
 @keyframes pulse-alert {
-  0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--color-confirm-glow); }
-  50% { opacity: 0.3; box-shadow: 0 0 2px var(--color-confirm-glow); }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
 }

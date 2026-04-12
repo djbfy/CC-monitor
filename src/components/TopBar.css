@@ -1,4 +1,4 @@
-/* TopBar.css — Midnight Command Center bar */
+/* TopBar.css — Soft Charcoal Dark Theme */
 .bar-drag-handle {
   display: flex;
   align-items: center;
@@ -72,7 +72,7 @@
   cursor: default;
 }
 
-/* Status dots with neon glow */
+/* Status dots — soft glow */
 .bar-dot {
   width: 8px;
   height: 8px;
@@ -80,21 +80,10 @@
   flex-shrink: 0;
 }
 
-.bar-dot--running {
-  background: var(--color-running);
-  box-shadow: 0 0 6px var(--color-running-glow);
-}
-.bar-dot--confirm {
-  background: var(--color-confirm);
-  box-shadow: 0 0 6px var(--color-confirm-glow);
-}
-.bar-dot--idle {
-  background: var(--color-idle);
-  box-shadow: 0 0 6px var(--color-idle-glow);
-}
-.bar-dot--offline {
-  background: var(--color-offline);
-}
+.bar-dot--running { background: var(--color-running); }
+.bar-dot--confirm { background: var(--color-confirm); }
+.bar-dot--idle { background: var(--color-idle); }
+.bar-dot--offline { background: var(--color-offline); }
 .bar-dot-empty {
   width: 8px;
   height: 8px;
@@ -133,7 +122,6 @@
   color: var(--color-text-tertiary);
 }
 
-/* Count badge — pill style */
 .bar-count {
   font-family: var(--font-display);
   font-size: 10px;
@@ -154,7 +142,6 @@
 .bar-count--idle { background: var(--color-idle-dim); color: var(--color-idle-text); }
 .bar-count--offline { background: var(--color-offline-dim); color: var(--color-offline-text); }
 
-/* Dropdown — glass panel */
 .bar-dropdown {
   position: fixed;
   background: var(--color-bg-elevated);
@@ -164,7 +151,6 @@
   z-index: 1000;
   min-width: 160px;
   overflow: hidden;
-  backdrop-filter: blur(12px);
 }
 
 .bar-dropdown-item {
@@ -189,7 +175,6 @@
   text-overflow: ellipsis;
 }
 
-/* Back button */
 .bar-back {
   display: flex;
   align-items: center;
@@ -215,7 +200,6 @@
   height: 14px;
 }
 
-/* Pin button */
 .bar-pin {
   display: flex;
   align-items: center;
@@ -242,10 +226,6 @@
 
 .bar-pin--active:hover {
   background: var(--color-bg-hover);
-}
-
-.bar-pin--active svg {
-  filter: drop-shadow(0 0 4px var(--color-idle-glow));
 }
 
 .bar-pin svg {
