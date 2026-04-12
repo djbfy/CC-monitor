@@ -33,7 +33,7 @@ interface TopBarProps {
 
 export function TopBar({ sessions, onSessionClick, onBackToCard, isPinned, onTogglePin }: TopBarProps) {
   const [openDropdown, setOpenDropdown] = useState<Session['state'] | null>(null);
-  console.log('[TopBar] render, sessions:', sessions.length, 'openDropdown:', openDropdown);
+  console.log('[TopBar] render, sessions:', sessions.length, 'openDropdown:', openDropdown, 'window size:', window.innerWidth, 'x', window.innerHeight);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -68,10 +68,17 @@ export function TopBar({ sessions, onSessionClick, onBackToCard, isPinned, onTog
   // Debug: listen on window to see if mouse events ever arrive
   useEffect(() => {
     const onMouseOver = (e: MouseEvent) => {
-      console.log('[window] mouseover target:', (e.target as HTMLElement).className, 'id:', (e.target as HTMLElement).id);
+      console.log('[window] mouseover', (e.target as HTMLElement).className, 'bar-mode children:', document.querySelectorAll('.bar-mode > *').length);
+    };
+    const onMouseEnter = (e: MouseEvent) => {
+      console.log('[window] mouseenter', (e.target as HTMLElement).className);
     };
     window.addEventListener('mouseover', onMouseOver);
-    return () => window.removeEventListener('mouseover', onMouseOver);
+    window.addEventListener('mouseenter', onMouseEnter);
+    return () => {
+      window.removeEventListener('mouseover', onMouseOver);
+      window.removeEventListener('mouseenter', onMouseEnter);
+    };
   }, []);
 
   const grouped = STATE_ORDER.reduce((acc, state) => {
@@ -195,40 +202,27 @@ function Dropdown({
   const [pos, setPos] = useState({ top: 0, left: 0, width: 180 });
 
   useEffect(() => {
-    // Try to find .bar-mode first
+    // Find the target cell by data-state attribute
+    const cell = document.querySelector(`[data-state="${state}"]`) as HTMLElement | null;
+    if (!cell) { console.log('[Dropdown] no cell found for state:', state); return; }
+
+    // Use offsetTop of the cell relative to bar-mode, plus bar-mode's offset from window top
     const barMode = document.querySelector('.bar-mode') as HTMLElement | null;
-    let rect: DOMRect | null = null;
+    const barTop = barMode ? barMode.offsetTop : 0;
+    const barLeft = barMode ? barMode.offsetLeft : 0;
 
-    if (barMode) {
-      const cols = barMode.querySelectorAll(':scope > .bar-col');
-      const stateIndex = STATE_ORDER.indexOf(state);
-      if (stateIndex >= 0 && stateIndex < cols.length) {
-        rect = (cols[stateIndex] as HTMLElement).getBoundingClientRect();
-      }
-    }
+    // Cell position relative to bar-mode container
+    const cellTop = cell.offsetTop;
+    const cellLeft = cell.offsetLeft;
+    const cellWidth = cell.offsetWidth;
 
-    // Fallback: find the cell directly via data attribute if barMode query failed
-    if (!rect) {
-      const cell = document.querySelector(`[data-state="${state}"]`) as HTMLElement | null;
-      if (cell) {
-        rect = cell.getBoundingClientRect();
-      }
-    }
+    console.log('[Dropdown] cell offsetTop:', cellTop, 'offsetLeft:', cellLeft, 'offsetWidth:', cellWidth, 'barTop:', barTop, 'barLeft:', barLeft);
 
-    if (rect) {
-      setPos({
-        top: rect.bottom + 6,
-        left: rect.left,
-        width: Math.max(rect.width, 180),
-      });
-    } else {
-      // Last resort: position below center of screen
-      setPos({
-        top: 50,
-        left: window.innerWidth / 2 - 90,
-        width: 180,
-      });
-    }
+    setPos({
+      top: barTop + cellTop + cell.offsetHeight + 4, // just below cell
+      left: barLeft + cellLeft,
+      width: Math.max(cellWidth, 180),
+    });
   }, [state]);
 
   return (
