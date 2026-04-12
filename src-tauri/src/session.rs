@@ -60,6 +60,8 @@ pub struct SessionMonitor {
     pub stopped: Arc<AtomicBool>,
     /// Consecutive low-CPU readings (for idle detection without PTY)
     pub cpu_low_consecutive: u32,
+    /// PTY reader saw a confirm prompt — stays true until user input is received
+    pub awaiting_confirm: bool,
 }
 
 impl SessionMonitor {
@@ -81,6 +83,7 @@ impl SessionMonitor {
             stopped: Arc::new(AtomicBool::new(false)),
             cpu_low_consecutive: 0,
             has_seen_output: false,
+            awaiting_confirm: false,
         }
     }
 }

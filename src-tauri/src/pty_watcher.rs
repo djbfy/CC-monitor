@@ -7,6 +7,32 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use std::mem::ManuallyDrop;
+use regex::Regex;
+use once_cell::sync::Lazy;
+
+/// Confirm patterns — checked by PTY reader to detect interactive prompts
+static CONFIRM_PATTERNS: Lazy<Vec<Regex>> = Lazy::new(|| {
+    [
+        r"(?i)\[y/N\]",
+        r"(?i)\[Y/n\]",
+        r"(?i)\[y/n\]",
+        r"(?i)\[Yes/No\]",
+        r"(?i)\[yes/no\]",
+        r"(?i)do you want to",
+        r"(?i)are you sure",
+        r"(?i)continue\?",
+        r"(?i)proceed\?",
+        r"(?i)overwrite\?",
+        r"(?i)press enter to",
+    ]
+    .iter()
+    .map(|p| Regex::new(p).unwrap())
+    .collect()
+});
+
+fn line_is_confirm_prompt(line: &str) -> bool {
+    CONFIRM_PATTERNS.iter().any(|p| p.is_match(line))
+}
 
 /// Result of spawning a PTY.
 /// Both `child` and `master` must be kept alive — dropping `master` closes the PTY
@@ -98,6 +124,13 @@ pub fn spawn_pty(
                         line_buf.drain(..=pos);
                         if !line.is_empty() {
                             let mut m = monitor_clone.lock().unwrap();
+                            // Detect confirm prompt — once set, stays true until non-confirm input arrives
+                            if line_is_confirm_prompt(&line) {
+                                m.awaiting_confirm = true;
+                            } else if m.awaiting_confirm {
+                                // User typed something (non-confirm line) — clear the flag
+                                m.awaiting_confirm = false;
+                            }
                             m.last_line = line.clone();
                             m.last_output = Instant::now();
                             m.has_seen_output = true;

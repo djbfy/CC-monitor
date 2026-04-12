@@ -77,9 +77,10 @@ fn spawn_monitor_loop(
                 let confirm = matches_confirm(&m.last_line);
                 let idle = matches_idle(&m.last_line);
                 let cpu_low = m.cpu_low_consecutive;
+                let awaiting = m.awaiting_confirm;
 
                 let old = m.state.clone();
-                let new = evaluate_state(&m, &sys, confirm, idle, cpu_low);
+                let new = evaluate_state(&m, &sys, confirm, idle, cpu_low, awaiting);
                 m.state = new.clone();
 
                 (new, old)

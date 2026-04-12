@@ -52,6 +52,7 @@ pub fn evaluate_state(
     confirm_match: bool,
     idle_match: bool,
     cpu_low_consecutive: u32,
+    awaiting_confirm: bool,
 ) -> SessionState {
     // Priority 1: Offline — process does not exist
     if monitor.pid.is_none() {
@@ -63,8 +64,9 @@ pub fn evaluate_state(
         return SessionState::Offline;
     }
 
-    // Priority 2: Confirm — pattern match (highest, ignores CPU/silent)
-    if confirm_match {
+    // Priority 2: Confirm — pattern match OR awaiting_confirm from PTY reader
+    // awaiting_confirm handles the case where user input overwrites the prompt in PTY tail mode
+    if confirm_match || awaiting_confirm {
         return SessionState::Confirm;
     }
 
