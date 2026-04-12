@@ -124,18 +124,17 @@ pub fn spawn_pty(
                         line_buf.drain(..=pos);
                         if !line.is_empty() {
                             let mut m = monitor_clone.lock().unwrap();
-                            // Detect confirm prompt — once set, stays true until process sends new output
+                            // Detect confirm prompt
                             if line_is_confirm_prompt(&line) {
                                 m.awaiting_confirm = true;
                             }
-                            // Clear awaiting_confirm ONLY when the process itself sends a new line
-                            // (i.e. NOT when the user types — user input gets echoed but is distinguishable:
-                            // a single-char line that follows a confirm prompt is almost certainly user echo)
-                            // Heuristic: short single-line input after awaiting_confirm is user echo
-                            let is_likely_user_echo = m.awaiting_confirm
-                                && line.len() <= 3
-                                && !line_is_confirm_prompt(&line);
-                            if !is_likely_user_echo && !line_is_confirm_prompt(&line) {
+                            // Clear awaiting_confirm only when process sends a genuinely new line
+                            // (not escape sequences like arrow keys \x1b[B, not bare \r from Enter)
+                            // Any printable/meaningful output from the process clears the flag
+                            let is_user_keypress = line.starts_with('\x1b')   // ANSI escape (arrow keys)
+                                || line == "\r"                               // bare CR (Enter key)
+                                || line == "\n";                              // bare LF
+                            if !is_user_keypress && !line_is_confirm_prompt(&line) {
                                 m.awaiting_confirm = false;
                             }
                             m.last_line = line.clone();
