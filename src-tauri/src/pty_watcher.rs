@@ -98,6 +98,12 @@ pub fn spawn_pty(
                         let line = String::from_utf8_lossy(&line_buf[..=pos]).trim().to_string();
                         line_buf.drain(..=pos);
                         if !line.is_empty() {
+                            // Skip pure ANSI control sequences (e.g. \x1b[K clear-to-EOL, \x1b[6G cursor move)
+                            // — they arrive as separate reads and must not overwrite last_line or affect awaiting_confirm
+                            if line.starts_with('\x1b') {
+                                continue;
+                            }
+
                             let mut m = monitor_clone.lock().unwrap();
                             // Detect confirm prompt
                             if matches_confirm(&line) {
