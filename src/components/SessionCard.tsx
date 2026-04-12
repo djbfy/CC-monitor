@@ -1,8 +1,7 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { Session } from '../types';
 import { StatusDot } from './StatusDot';
-import { SilentBar } from './SilentBar';
 import { SessionInfo } from './SessionInfo';
 import './SessionCard.css';
 
@@ -31,20 +30,25 @@ function formatDuration(ms: number): string {
   const mins = Math.floor(secs / 60);
   if (mins < 60) return `${mins}m`;
   const hrs = Math.floor(mins / 60);
-  return `${hrs}h`;
+  if (hrs < 24) return `${hrs}h`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d`;
 }
 
 export function SessionCard({ session, onRemove }: SessionCardProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
+  const [now, setNow] = useState(Date.now());
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const metaActive = session.state === 'running' ? '活跃' : session.state === 'confirm' ? '等待' : session.state === 'idle' ? '静默' : null;
-  const metaValue = session.state !== 'offline'
-    ? metaActive === '静默' || metaActive === '等待'
-      ? `${session.silentSecs}s`
-      : formatDuration(Date.now() - session.startedAt)
-    : null;
+  // Live counter — tick every second for running sessions
+  useEffect(() => {
+    if (session.state === 'offline') return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [session.state]);
+
+  const activeTime = session.state !== 'offline' ? formatDuration(now - session.startedAt) : null;
 
   const startEditing = () => {
     setDraft(session.name);
@@ -117,16 +121,12 @@ export function SessionCard({ session, onRemove }: SessionCardProps) {
           {STATE_LABELS[session.state]}
         </span>
       </div>
-      <SilentBar state={session.state} silentSecs={session.silentSecs} />
       <SessionInfo session={session} />
       <div className="meta">
         <span className="mi">CPU <span className="mv">{session.cpuPercent.toFixed(1)}%</span></span>
-        {metaValue && (
-          <span className="mi">
-            {metaActive} <span className="mv">{metaValue}</span>
-          </span>
-        )}
-        {session.state === 'offline' && (
+        {activeTime ? (
+          <span className="mi">活跃 <span className="mv">{activeTime}</span></span>
+        ) : (
           <span className="mi">进程 <span className="mv">不存在</span></span>
         )}
       </div>

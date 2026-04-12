@@ -10,7 +10,7 @@ use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use sysinfo::System;
-use tauri::{AppHandle, Emitter, Manager, State};
+use tauri::{AppHandle, Emitter, Manager};
 use tokio::sync::mpsc;
 use uuid::Uuid;
 
@@ -194,7 +194,8 @@ pub async fn discover_sessions(
 }
 
 #[tauri::command]
-pub async fn launch_session(work_dir: String, state: State<'_, AppState>) -> Result<String, String> {
+pub async fn launch_session(work_dir: String, app: AppHandle) -> Result<String, String> {
+    let state = app.state::<AppState>();
     let work_path = PathBuf::from(&work_dir);
     if !work_path.exists() {
         return Err(format!("工作目录不存在: {}", work_dir));
@@ -233,7 +234,7 @@ pub async fn launch_session(work_dir: String, state: State<'_, AppState>) -> Res
 
     spawn_monitor_loop(
         monitor.clone(),
-        state.inner().app_handle.clone(),
+        state.app_handle.clone(),
         POLL_INTERVAL_MS,
         id.clone(),
         CPU_LOW_THRESHOLD,
@@ -249,13 +250,14 @@ pub async fn launch_session(work_dir: String, state: State<'_, AppState>) -> Res
     let infos: Vec<SessionInfo> = state.monitors.lock().unwrap().values()
         .map(|m| m.lock().unwrap().to_info())
         .collect();
-    let _ = state.inner().app_handle.emit("session_update", &infos);
+    let _ = state.app_handle.emit("session_update", &infos);
 
     Ok(id)
 }
 
 #[tauri::command]
-pub async fn rename_session(id: String, name: String, state: State<'_, AppState>) -> Result<(), String> {
+pub async fn rename_session(id: String, name: String, app: AppHandle) -> Result<(), String> {
+    let state = app.state::<AppState>();
     let infos: Vec<SessionInfo> = {
         let monitors = state.monitors.lock().unwrap();
         let monitor = monitors.get(&id).ok_or("会话不存在")?;
@@ -269,7 +271,8 @@ pub async fn rename_session(id: String, name: String, state: State<'_, AppState>
 }
 
 #[tauri::command]
-pub async fn stop_session(id: String, state: State<'_, AppState>) -> Result<(), String> {
+pub async fn stop_session(id: String, app: AppHandle) -> Result<(), String> {
+    let state = app.state::<AppState>();
     let monitor = {
         let mut monitors = state.monitors.lock().unwrap();
         match monitors.remove(&id) {
@@ -284,7 +287,8 @@ pub async fn stop_session(id: String, state: State<'_, AppState>) -> Result<(), 
 }
 
 #[tauri::command]
-pub async fn refresh_sessions(state: State<'_, AppState>) -> Result<(), String> {
+pub async fn refresh_sessions(app: AppHandle) -> Result<(), String> {
+    let state = app.state::<AppState>();
     // Use mutex to prevent concurrent discovery
     let mut discovering = state.discovering.lock().unwrap();
     if *discovering {
@@ -304,7 +308,8 @@ pub async fn refresh_sessions(state: State<'_, AppState>) -> Result<(), String> 
 }
 
 #[tauri::command]
-pub async fn get_sessions(state: State<'_, AppState>) -> Result<Vec<SessionInfo>, String> {
+pub async fn get_sessions(app: AppHandle) -> Result<Vec<SessionInfo>, String> {
+    let state = app.state::<AppState>();
     let monitors = state.monitors.lock().unwrap();
     let infos: Vec<SessionInfo> = monitors.values()
         .map(|m| m.lock().unwrap().to_info())
