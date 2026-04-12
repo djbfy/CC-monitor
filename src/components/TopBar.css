@@ -358,11 +358,6 @@
   color: #0A84FF;
 }
 
-.bar-btn--close:hover {
-  background: rgba(255, 69, 58, 0.15);
-  color: #FF453A;
-}
-
 .bar-btn svg {
   width: 16px;
   height: 16px;

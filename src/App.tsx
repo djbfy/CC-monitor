@@ -30,7 +30,10 @@ export default function App() {
         }
       });
     };
-    win.onCloseRequested(handler);
+    const unlistenPromise = win.onCloseRequested(handler);
+    return () => {
+      unlistenPromise.then((fn) => fn());
+    };
   }, []);
 
   const handleAddClick = useCallback(async () => {

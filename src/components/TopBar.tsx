@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Session } from '../types';
 import './TopBar.css';
 
@@ -8,6 +9,7 @@ const startDrag = () => {
 };
 
 const STATE_ORDER: Session['state'][] = ['running', 'confirm', 'idle', 'offline'];
+const STATE_INDEX = Object.fromEntries(STATE_ORDER.map((s, i) => [s, i]));
 
 const STATE_LABELS: Record<Session['state'], string> = {
   running: '运行中',
@@ -25,12 +27,13 @@ interface TopBarProps {
 }
 
 export function TopBar({ sessions, onSessionClick, onBackToCard, isPinned, onTogglePin }: TopBarProps) {
-  const ordered = [...sessions].sort((a, b) => {
-    const ai = STATE_ORDER.indexOf(a.state);
-    const bi = STATE_ORDER.indexOf(b.state);
-    if (ai !== bi) return ai - bi;
-    return a.id.localeCompare(b.id);
-  });
+  const ordered = useMemo(() =>
+    [...sessions].sort((a, b) => {
+      const ai = STATE_INDEX[a.state] ?? 0;
+      const bi = STATE_INDEX[b.state] ?? 0;
+      if (ai !== bi) return ai - bi;
+      return a.id.localeCompare(b.id);
+    }), [sessions]);
 
   return (
     <div className="bar-mode">

@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { Session } from '../types';
 import './SessionInfo.css';
 
@@ -19,7 +18,7 @@ function formatTimeAgo(ts: number): string {
 }
 
 export function SessionInfo({ session }: SessionInfoProps) {
-  const timeLabel = useMemo(() => formatTimeAgo(session.startedAt), [session.startedAt]);
+  const timeLabel = formatTimeAgo(session.startedAt);
 
   return (
     <div className="session-info">
