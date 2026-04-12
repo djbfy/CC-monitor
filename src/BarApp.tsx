@@ -59,7 +59,7 @@ export default function BarApp() {
       style={{
         position: 'absolute',
         inset: 0,
-        background: 'var(--color-background)',
+        background: 'var(--color-bg-base)',
         overflow: 'visible',
       }}
     >

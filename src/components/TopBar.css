@@ -1,15 +1,21 @@
+/* TopBar.css — Midnight Command Center bar */
 .bar-drag-handle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
+  width: 32px;
   height: 100%;
   flex-shrink: 0;
   color: var(--color-text-tertiary);
   cursor: grab;
   user-select: none;
-  border-right: 0.5px solid var(--color-border-tertiary);
-  /* pointer-events: none so clicks pass through, but drag-region captures drag */
+  border-right: 1px solid var(--color-border-subtle);
+  transition: color 0.12s, background 0.12s;
+}
+
+.bar-drag-handle:hover {
+  color: var(--color-text-secondary);
+  background: var(--color-bg-hover);
 }
 
 .bar-drag-handle svg {
@@ -18,9 +24,8 @@
 }
 
 .bar-mode {
-  background: var(--color-background-secondary);
-  border: 0.5px solid var(--color-border-tertiary);
-  border-radius: 8px;
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border-subtle);
   display: flex;
   align-items: stretch;
   height: 36px;
@@ -36,7 +41,7 @@
   display: flex;
   align-items: center;
   min-width: 0;
-  border-right: 0.5px solid var(--color-border-tertiary);
+  border-right: 1px solid var(--color-border-subtle);
   position: relative;
   height: 100%;
 }
@@ -48,8 +53,8 @@
 .bar-cell {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 0 8px;
+  gap: 6px;
+  padding: 0 10px;
   height: 100%;
   width: 100%;
   min-width: 0;
@@ -60,37 +65,46 @@
 }
 
 .bar-cell:hover {
-  background: rgba(0,0,0,0.04);
-}
-
-.dark .bar-cell:hover {
-  background: rgba(255,255,255,0.06);
+  background: var(--color-bg-hover);
 }
 
 .bar-cell--empty {
   cursor: default;
 }
 
+/* Status dots with neon glow */
 .bar-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.bar-dot--running { background: #639922; }
-.bar-dot--confirm { background: #EF9F27; }
-.bar-dot--idle { background: #378ADD; }
-.bar-dot--offline { background: #888480; }
+.bar-dot--running {
+  background: var(--color-running);
+  box-shadow: 0 0 6px var(--color-running-glow);
+}
+.bar-dot--confirm {
+  background: var(--color-confirm);
+  box-shadow: 0 0 6px var(--color-confirm-glow);
+}
+.bar-dot--idle {
+  background: var(--color-idle);
+  box-shadow: 0 0 6px var(--color-idle-glow);
+}
+.bar-dot--offline {
+  background: var(--color-offline);
+}
 .bar-dot-empty {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: var(--color-border-secondary);
+  background: var(--color-border);
   flex-shrink: 0;
 }
 
 .bar-name {
+  font-family: var(--font-display);
   font-size: 12px;
   font-weight: 500;
   color: var(--color-text-primary);
@@ -102,7 +116,9 @@
 }
 
 .bar-state-label {
+  font-family: var(--font-display);
   font-size: 11px;
+  font-weight: 500;
   flex-shrink: 0;
 }
 
@@ -112,55 +128,60 @@
 .bar-state-label--offline { color: var(--color-offline-text); }
 
 .bar-label-empty {
+  font-family: var(--font-display);
   font-size: 11px;
   color: var(--color-text-tertiary);
 }
 
+/* Count badge — pill style */
 .bar-count {
+  font-family: var(--font-display);
   font-size: 10px;
-  font-weight: 600;
-  padding: 1px 5px;
-  border-radius: 8px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 16px;
-  height: 14px;
+  min-width: 18px;
+  height: 16px;
   box-sizing: border-box;
 }
 
-.bar-count--running { background: #D8EDCD; color: #3B6D11; }
-.bar-count--confirm { background: #FDEFC4; color: #854F0B; }
-.bar-count--idle { background: #C8DFF7; color: #185FA5; }
-.bar-count--offline { background: #E8E6E1; color: #5F5E5A; }
+.bar-count--running { background: var(--color-running-dim); color: var(--color-running-text); }
+.bar-count--confirm { background: var(--color-confirm-dim); color: var(--color-confirm-text); }
+.bar-count--idle { background: var(--color-idle-dim); color: var(--color-idle-text); }
+.bar-count--offline { background: var(--color-offline-dim); color: var(--color-offline-text); }
 
-/* Dropdown — position: fixed, escapes all overflow contexts */
+/* Dropdown — glass panel */
 .bar-dropdown {
   position: fixed;
-  background: var(--color-background-primary);
-  border: 0.5px solid var(--color-border-secondary);
-  border-radius: var(--border-radius-md);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-elevated);
   z-index: 1000;
-  min-width: 140px;
+  min-width: 160px;
   overflow: hidden;
+  backdrop-filter: blur(12px);
 }
 
 .bar-dropdown-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
+  padding: 9px 14px;
   cursor: pointer;
   transition: background 0.1s;
 }
 
 .bar-dropdown-item:hover {
-  background: var(--color-background-secondary);
+  background: var(--color-bg-hover);
 }
 
 .bar-dropdown-name {
+  font-family: var(--font-display);
   font-size: 12px;
   color: var(--color-text-primary);
   white-space: nowrap;
@@ -173,23 +194,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
+  width: 36px;
   height: 100%;
   padding: 0 4px;
   cursor: pointer;
   color: var(--color-text-secondary);
   flex-shrink: 0;
-  transition: background 0.12s;
+  transition: background 0.12s, color 0.12s;
   align-self: center;
-  border-left: 0.5px solid var(--color-border-tertiary);
+  border-left: 1px solid var(--color-border-subtle);
 }
 
 .bar-back:hover {
-  background: rgba(0,0,0,0.04);
-}
-
-.dark .bar-back:hover {
-  background: rgba(255,255,255,0.06);
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
 }
 
 .bar-back svg {
@@ -202,7 +220,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
+  width: 32px;
   height: 100%;
   padding: 0 4px;
   cursor: pointer;
@@ -210,11 +228,12 @@
   flex-shrink: 0;
   transition: background 0.12s, color 0.12s;
   align-self: center;
-  border-left: 0.5px solid var(--color-border-tertiary);
+  border-left: 1px solid var(--color-border-subtle);
 }
 
 .bar-pin:hover {
-  background: rgba(0,0,0,0.04);
+  background: var(--color-bg-hover);
+  color: var(--color-text-secondary);
 }
 
 .bar-pin--active {
@@ -222,18 +241,14 @@
 }
 
 .bar-pin--active:hover {
-  background: rgba(0,0,0,0.04);
+  background: var(--color-bg-hover);
+}
+
+.bar-pin--active svg {
+  filter: drop-shadow(0 0 4px var(--color-idle-glow));
 }
 
 .bar-pin svg {
   width: 13px;
   height: 13px;
-}
-
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-  .bar-count--running { background: #2A3D20; color: #97C459; }
-  .bar-count--confirm { background: #3D2A10; color: #FAC775; }
-  .bar-count--idle { background: #0C2A4A; color: #85B7EB; }
-  .bar-count--offline { background: #333330; color: #D3D1C7; }
 }

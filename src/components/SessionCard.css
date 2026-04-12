@@ -1,30 +1,69 @@
+/* SessionCard.css — Midnight Command Center */
 .card {
-  background: var(--color-background-primary);
-  border: 0.5px solid var(--color-border-tertiary);
-  border-radius: var(--border-radius-lg);
-  padding: 13px 15px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md) var(--spacing-lg);
   cursor: pointer;
-  transition: border-color 0.15s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s,
+    background 0.2s;
+  position: relative;
+  overflow: hidden;
 }
 
-.card:hover {
-  border-color: var(--color-border-secondary);
+/* Subtle top accent line per state */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  opacity: 0.7;
+  transition: opacity 0.2s;
 }
+
+.card.running::before { background: var(--color-running); box-shadow: 0 0 8px var(--color-running-glow); }
+.card.confirm::before { background: var(--color-confirm); box-shadow: 0 0 8px var(--color-confirm-glow); }
+.card.idle::before { background: var(--color-idle); box-shadow: 0 0 8px var(--color-idle-glow); }
+.card.offline::before { background: var(--color-offline); }
+
+.card:hover {
+  background: var(--color-bg-elevated);
+  border-color: var(--color-border);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-elevated);
+}
+
+.card.running:hover { box-shadow: var(--shadow-elevated), var(--shadow-glow-running); border-color: rgba(0, 229, 160, 0.3); }
+.card.confirm:hover { box-shadow: var(--shadow-elevated), var(--shadow-glow-confirm); border-color: rgba(255, 181, 71, 0.3); }
+.card.idle:hover { box-shadow: var(--shadow-elevated), var(--shadow-glow-idle); border-color: rgba(77, 158, 255, 0.3); }
 
 .card-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 9px;
+  margin-bottom: var(--spacing-sm);
+  position: relative;
 }
 
 .card-name {
-  font-size: 13px;
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
   color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70%;
 }
 
 .card-pid {
+  font-family: var(--font-mono);
   font-size: 11px;
   color: var(--color-text-tertiary);
 }
@@ -33,12 +72,16 @@
   background: none;
   border: none;
   color: var(--color-text-tertiary);
-  font-size: 16px;
+  font-size: 18px;
   cursor: pointer;
   padding: 0 4px;
   line-height: 1;
   opacity: 0;
   transition: opacity 0.15s, color 0.15s;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .card:hover .card-remove {
@@ -46,19 +89,22 @@
 }
 
 .card-remove:hover {
-  color: var(--color-text-secondary);
+  color: #FF6B6B;
 }
 
+/* Status row */
 .status-row {
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin-bottom: 9px;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
 .st {
+  font-family: var(--font-display);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
 .st-run { color: var(--color-running-text); }
@@ -66,24 +112,20 @@
 .st-idle { color: var(--color-idle-text); }
 .st-off { color: var(--color-offline-text); }
 
-@media (prefers-color-scheme: dark) {
-  .st-run { color: var(--color-running-text); }
-  .st-confirm { color: var(--color-confirm-text); }
-  .st-idle { color: var(--color-idle-text); }
-}
-
+/* Meta info row */
 .meta {
   display: flex;
-  gap: 10px;
-  margin-top: 7px;
+  gap: 14px;
+  margin-top: 10px;
 }
 
 .mi {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--color-text-tertiary);
 }
 
 .mv {
   color: var(--color-text-secondary);
-  font-weight: 500;
+  font-weight: 600;
+  font-family: var(--font-mono);
 }

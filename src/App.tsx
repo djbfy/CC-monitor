@@ -64,10 +64,12 @@ export default function App() {
     <div className="root">
       <div className="toolbar">
         <span className="app-title">CC Monitor</span>
-        <button className="refresh-btn" onClick={handleRefresh} title="刷新列表">
-          ↻
-        </button>
-        <ViewToggle mode="card" onChange={handleSwitchToBar} />
+        <div className="toolbar-right">
+          <button className="refresh-btn" onClick={handleRefresh} title="刷新列表">
+            ↻
+          </button>
+          <ViewToggle mode="card" onChange={handleSwitchToBar} />
+        </div>
       </div>
 
       <div className="mode-card">

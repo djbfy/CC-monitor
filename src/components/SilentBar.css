@@ -1,32 +1,35 @@
+/* SilentBar.css — Midnight Command Center */
 .silent-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 9px;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
 .bar-track {
   flex: 1;
   height: 3px;
-  background: var(--color-background-secondary);
+  background: var(--color-bg-base);
   border-radius: 2px;
   overflow: hidden;
+  border: 1px solid var(--color-border-subtle);
 }
 
 .bar-fill {
   height: 100%;
   border-radius: 2px;
-  transition: width 0.3s ease;
+  transition: width 0.4s ease;
 }
 
-.bar-fill-running { background: var(--color-running); }
-.bar-fill-confirm { background: var(--color-confirm); }
-.bar-fill-idle { background: var(--color-idle); }
+.bar-fill-running { background: var(--color-running); box-shadow: 0 0 4px var(--color-running-glow); }
+.bar-fill-confirm { background: var(--color-confirm); box-shadow: 0 0 4px var(--color-confirm-glow); }
+.bar-fill-idle { background: var(--color-idle); box-shadow: 0 0 4px var(--color-idle-glow); }
 .bar-fill-offline { background: var(--color-offline); }
 
 .bar-lbl {
+  font-family: var(--font-mono);
   font-size: 10px;
   color: var(--color-text-tertiary);
-  min-width: 26px;
+  min-width: 30px;
   text-align: right;
 }

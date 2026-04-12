@@ -42,7 +42,7 @@ export function SessionCard({ session, prevLine, onRemove }: SessionCardProps) {
     : null;
 
   return (
-    <div className="card">
+    <div className={`card ${session.state}`}>
       <div className="card-head">
         <span className="card-name">{session.name}</span>
         <span className="card-pid">
