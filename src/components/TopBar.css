@@ -1,9 +1,25 @@
-/* TopBar.css — macOS Sonoma Dark Style */
+/* TopBar.css — macOS Sonoma Style, bar window */
+.bar-mode {
+  display: flex;
+  align-items: stretch;
+  height: 44px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  position: relative;
+  width: 100%;
+  overflow: visible;
+  background: var(--color-bg-surface);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+/* Drag handle — left side, non-interactive */
 .bar-drag-handle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
+  width: 44px;
   height: 100%;
   flex-shrink: 0;
   color: var(--color-text-tertiary);
@@ -11,40 +27,27 @@
   user-select: none;
   border-right: 1px solid var(--color-border-subtle);
   transition: background 0.12s, color 0.12s;
+  -webkit-app-region: no-drag;
 }
 
 .bar-drag-handle:hover {
+  background: var(--color-bg-hover);
   color: var(--color-text-secondary);
 }
 
 .bar-drag-handle svg {
-  width: 13px;
-  height: 13px;
-  opacity: 0.7;
+  width: 18px;
+  height: 18px;
+  opacity: 0.5;
 }
 
-.bar-mode {
-  background: var(--color-bg-surface);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
-  border-bottom: 1px solid var(--color-border-subtle);
-  display: flex;
-  align-items: stretch;
-  height: 36px;
-  box-sizing: border-box;
-  flex-shrink: 0;
-  position: relative;
-  width: 100%;
-  overflow: visible;
-}
-
+/* State columns */
 .bar-col {
   flex: 1;
   display: flex;
   align-items: center;
   min-width: 0;
   border-right: 1px solid var(--color-border-subtle);
-  position: relative;
   height: 100%;
 }
 
@@ -55,8 +58,8 @@
 .bar-cell {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 10px;
+  gap: 8px;
+  padding: 0 14px;
   height: 100%;
   width: 100%;
   min-width: 0;
@@ -74,9 +77,10 @@
   cursor: default;
 }
 
+/* Status dots */
 .bar-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -85,17 +89,19 @@
 .bar-dot--confirm { background: var(--color-confirm); }
 .bar-dot--idle    { background: var(--color-idle); }
 .bar-dot--offline { background: var(--color-offline); }
+
 .bar-dot-empty {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--color-border);
   flex-shrink: 0;
 }
 
+/* Session name */
 .bar-name {
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--color-text-primary);
   white-space: nowrap;
@@ -105,9 +111,10 @@
   flex: 1;
 }
 
+/* State label */
 .bar-state-label {
   font-family: var(--font-display);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   flex-shrink: 0;
 }
@@ -117,24 +124,26 @@
 .bar-state-label--idle    { color: var(--color-idle-text); }
 .bar-state-label--offline { color: var(--color-offline-text); }
 
+/* Empty label */
 .bar-label-empty {
   font-family: var(--font-display);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--color-text-tertiary);
 }
 
+/* Count pill */
 .bar-count {
   font-family: var(--font-display);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 1px 6px;
+  padding: 2px 7px;
   border-radius: 10px;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 18px;
-  height: 16px;
+  min-width: 20px;
+  height: 18px;
   box-sizing: border-box;
 }
 
@@ -143,6 +152,7 @@
 .bar-count--idle    { background: var(--color-idle-dim); color: var(--color-idle-text); }
 .bar-count--offline { background: var(--color-offline-dim); color: var(--color-offline-text); }
 
+/* Dropdown — macOS glass panel */
 .bar-dropdown {
   position: fixed;
   background: var(--color-bg-elevated);
@@ -152,15 +162,15 @@
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-elevated);
   z-index: 1000;
-  min-width: 160px;
+  min-width: 180px;
   overflow: hidden;
 }
 
 .bar-dropdown-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 14px;
+  gap: 10px;
+  padding: 10px 16px;
   cursor: pointer;
   transition: background 0.1s;
 }
@@ -171,20 +181,21 @@
 
 .bar-dropdown-name {
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--color-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* Back button */
 .bar-back {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
+  width: 44px;
   height: 100%;
-  padding: 0 4px;
+  padding: 0;
   cursor: pointer;
   color: var(--color-text-secondary);
   flex-shrink: 0;
@@ -199,17 +210,18 @@
 }
 
 .bar-back svg {
-  width: 13px;
-  height: 13px;
+  width: 16px;
+  height: 16px;
 }
 
+/* Pin button */
 .bar-pin {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
+  width: 44px;
   height: 100%;
-  padding: 0 4px;
+  padding: 0;
   cursor: pointer;
   color: var(--color-text-tertiary);
   flex-shrink: 0;
@@ -232,6 +244,6 @@
 }
 
 .bar-pin svg {
-  width: 13px;
-  height: 13px;
+  width: 15px;
+  height: 15px;
 }

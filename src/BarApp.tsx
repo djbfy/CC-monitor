@@ -12,8 +12,6 @@ export default function BarApp() {
 
   useEffect(() => {
     invoke<Session[]>('get_sessions').then(setSessions).catch(console.error);
-
-    // Check initial always-on-top state
     getCurrentWindow().isAlwaysOnTop().then(setIsPinned).catch(() => {});
 
     const unlisten = listen<Session[]>('session_update', (event) => {
@@ -59,7 +57,9 @@ export default function BarApp() {
       style={{
         position: 'absolute',
         inset: 0,
-        background: 'var(--color-bg-base)',
+        background: 'var(--color-bg-surface)',
+        backdropFilter: 'var(--blur)',
+        WebkitBackdropFilter: 'var(--blur)',
         overflow: 'visible',
       }}
     >
