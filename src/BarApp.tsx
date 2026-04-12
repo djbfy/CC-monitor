@@ -1,5 +1,5 @@
 // BarApp.tsx — Lightweight app for the bar window
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
@@ -23,7 +23,7 @@ export default function BarApp() {
     };
   }, []);
 
-  const handleSessionClick = async (_id: string) => {
+  const handleSessionClick = useCallback(async (_id: string) => {
     try {
       await invoke('set_view_mode', { mode: 'card' });
       const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow');
@@ -32,17 +32,17 @@ export default function BarApp() {
     } catch (e) {
       console.error('Failed to focus main window:', e);
     }
-  };
+  }, []);
 
-  const handleBackToCard = async () => {
+  const handleBackToCard = useCallback(async () => {
     try {
       await invoke('set_view_mode', { mode: 'card' });
     } catch (e) {
       console.error('Failed to switch to card view:', e);
     }
-  };
+  }, []);
 
-  const handleTogglePin = async () => {
+  const handleTogglePin = useCallback(async () => {
     try {
       const newState = !isPinned;
       await getCurrentWindow().setAlwaysOnTop(newState);
@@ -50,7 +50,7 @@ export default function BarApp() {
     } catch (e) {
       console.error('Failed to toggle always-on-top:', e);
     }
-  };
+  }, [isPinned]);
 
   return (
     <div

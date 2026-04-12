@@ -9,14 +9,10 @@ import { CardGrid } from './components/CardGrid';
 import { ErrorToast } from './components/ErrorToast';
 import './App.css';
 
-const STATE_LABELS = ['运行中', '待确认', '休息中', '离线'] as const;
-const STATE_KEYS = ['running', 'confirm', 'idle', 'offline'] as const;
-
 export default function App() {
   const { sessions, error, refresh } = useSessions();
   const launchSession = useLaunchSession();
   const [localError, setLocalError] = useState<string | null>(null);
-  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
 
   const allError = localError || error;
 
@@ -63,14 +59,6 @@ export default function App() {
   const handleSwitchToBar = useCallback(() => {
     invoke('set_view_mode', { mode: 'bar' }).catch(console.error);
   }, []);
-
-  // Group sessions by state
-  const grouped = STATE_KEYS.reduce((acc, key) => {
-    acc[key] = sessions.filter((s) => s.state === key);
-    return acc;
-  }, {} as Record<string, typeof sessions>);
-
-  const activeGroup = selectedGroup;
 
   return (
     <div className="root">

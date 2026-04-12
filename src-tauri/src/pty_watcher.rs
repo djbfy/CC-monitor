@@ -1,38 +1,13 @@
 // pty_watcher.rs — PTY spawning and ANSI stripping
 
 use crate::session::SessionMonitor;
+use crate::state_machine::matches_confirm;
 use portable_pty::{CommandBuilder, PtySize, Child};
 use std::io::Read;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use std::mem::ManuallyDrop;
-use regex::Regex;
-use once_cell::sync::Lazy;
-
-/// Confirm patterns — checked by PTY reader to detect interactive prompts
-static CONFIRM_PATTERNS: Lazy<Vec<Regex>> = Lazy::new(|| {
-    [
-        r"(?i)\[y/N\]",
-        r"(?i)\[Y/n\]",
-        r"(?i)\[y/n\]",
-        r"(?i)\[Yes/No\]",
-        r"(?i)\[yes/no\]",
-        r"(?i)do you want to",
-        r"(?i)are you sure",
-        r"(?i)continue\?",
-        r"(?i)proceed\?",
-        r"(?i)overwrite\?",
-        r"(?i)press enter to",
-    ]
-    .iter()
-    .map(|p| Regex::new(p).unwrap())
-    .collect()
-});
-
-fn line_is_confirm_prompt(line: &str) -> bool {
-    CONFIRM_PATTERNS.iter().any(|p| p.is_match(line))
-}
 
 /// Result of spawning a PTY.
 /// Both `child` and `master` must be kept alive — dropping `master` closes the PTY
@@ -125,16 +100,12 @@ pub fn spawn_pty(
                         if !line.is_empty() {
                             let mut m = monitor_clone.lock().unwrap();
                             // Detect confirm prompt
-                            if line_is_confirm_prompt(&line) {
+                            if matches_confirm(&line) {
                                 m.awaiting_confirm = true;
                             }
-                            // Clear awaiting_confirm only when process sends a genuinely new line
-                            // (not escape sequences like arrow keys \x1b[B, not bare \r from Enter)
-                            // Any printable/meaningful output from the process clears the flag
-                            let is_user_keypress = line.starts_with('\x1b')   // ANSI escape (arrow keys)
-                                || line == "\r"                               // bare CR (Enter key)
-                                || line == "\n";                              // bare LF
-                            if !is_user_keypress && !line_is_confirm_prompt(&line) {
+                            // Arrow keys (\x1b[...) and bare CR (Enter) don't clear awaiting_confirm
+                            let is_user_keypress = line.starts_with('\x1b') || line == "\r";
+                            if !is_user_keypress && !matches_confirm(&line) {
                                 m.awaiting_confirm = false;
                             }
                             m.last_line = line.clone();

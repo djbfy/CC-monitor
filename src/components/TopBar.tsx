@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Session } from '../types';
 import './TopBar.css';
 
@@ -169,9 +169,13 @@ function Dropdown({
   onSelect: (id: string) => void;
 }) {
   const [pos, setPos] = useState({ top: 0, left: 0, width: 160 });
+  const barModeRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    const barMode = document.querySelector('.bar-mode');
+    if (!barModeRef.current) {
+      barModeRef.current = document.querySelector('.bar-mode');
+    }
+    const barMode = barModeRef.current;
     if (!barMode) return;
     const cols = barMode.children as HTMLCollectionOf<HTMLElement>;
     const stateIndex = STATE_ORDER.indexOf(state);

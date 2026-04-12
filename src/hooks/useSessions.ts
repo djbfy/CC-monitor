@@ -21,8 +21,8 @@ export function useSessions() {
     listen<Session[]>('session_update', (event) => {
       setSessions((prev) => {
         const updated = event.payload;
+        if (updated === prev) return prev;
         if (updated.length === 1) {
-          // Single session update — merge into existing list
           const updatedSession = updated[0];
           const exists = prev.some((s) => s.id === updatedSession.id);
           if (exists) {
@@ -31,7 +31,6 @@ export function useSessions() {
             return [...prev, updatedSession];
           }
         }
-        // Full list update (from get_sessions)
         return updated;
       });
     }).then((fn) => {

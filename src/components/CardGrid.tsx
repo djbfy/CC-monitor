@@ -15,12 +15,10 @@ export function CardGrid({ sessions, onAddClick, onRemoveSession }: CardGridProp
         <SessionCard key={s.id} session={s} onRemove={onRemoveSession} />
       ))}
       <div className="card add-card" onClick={onAddClick} role="button" tabIndex={0}>
-        <div className="card-head">
-          <span className="card-name" style={{ color: 'var(--color-text-tertiary)' }}>
-            + 添加终端
-          </span>
+        <div className="add-inner">
+          <div className="add-inner-icon">+</div>
+          <div className="add-inner-text">添加终端</div>
         </div>
-        <div className="add-inner">绑定新的 Claude Code 进程</div>
       </div>
     </div>
   );
