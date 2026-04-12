@@ -104,6 +104,7 @@ export function TopBar({ sessions, onSessionClick, onBackToCard, isPinned, onTog
             <div key={state} className="bar-col">
               <div
                 className={`bar-cell ${count === 0 ? 'bar-cell--empty' : ''}`}
+                data-state={state}
                 onMouseEnter={() => handleCellEnter(state, list)}
                 onMouseLeave={handleCellLeave}
                 onClick={() => handleCellClick(state, list)}
@@ -194,23 +195,40 @@ function Dropdown({
   const [pos, setPos] = useState({ top: 0, left: 0, width: 180 });
 
   useEffect(() => {
+    // Try to find .bar-mode first
     const barMode = document.querySelector('.bar-mode') as HTMLElement | null;
-    console.log('[Dropdown] effect running, state:', state, 'barMode found:', !!barMode);
-    if (!barMode) return;
-    const cols = barMode.querySelectorAll(':scope > .bar-col');
-    const stateIndex = STATE_ORDER.indexOf(state);
-    console.log('[Dropdown] stateIndex:', stateIndex, 'cols.length:', cols.length);
-    if (stateIndex < 0 || stateIndex >= cols.length) return;
-    const targetCell = cols[stateIndex] as HTMLElement;
-    if (!targetCell) return;
+    let rect: DOMRect | null = null;
 
-    const rect = targetCell.getBoundingClientRect();
-    console.log('[Dropdown] pos:', { top: rect.bottom + 6, left: rect.left, width: Math.max(rect.width, 180) });
-    setPos({
-      top: rect.bottom + 6,
-      left: rect.left,
-      width: Math.max(rect.width, 180),
-    });
+    if (barMode) {
+      const cols = barMode.querySelectorAll(':scope > .bar-col');
+      const stateIndex = STATE_ORDER.indexOf(state);
+      if (stateIndex >= 0 && stateIndex < cols.length) {
+        rect = (cols[stateIndex] as HTMLElement).getBoundingClientRect();
+      }
+    }
+
+    // Fallback: find the cell directly via data attribute if barMode query failed
+    if (!rect) {
+      const cell = document.querySelector(`[data-state="${state}"]`) as HTMLElement | null;
+      if (cell) {
+        rect = cell.getBoundingClientRect();
+      }
+    }
+
+    if (rect) {
+      setPos({
+        top: rect.bottom + 6,
+        left: rect.left,
+        width: Math.max(rect.width, 180),
+      });
+    } else {
+      // Last resort: position below center of screen
+      setPos({
+        top: 50,
+        left: window.innerWidth / 2 - 90,
+        width: 180,
+      });
+    }
   }, [state]);
 
   return (
