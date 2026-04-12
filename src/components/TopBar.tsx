@@ -30,31 +30,31 @@ interface TopBarProps {
 export function TopBar({ sessions, onSessionClick, onBackToCard, isPinned, onTogglePin }: TopBarProps) {
   const [openDropdown, setOpenDropdown] = useState<Session['state'] | null>(null);
 
+  // Close dropdown on click outside
   useEffect(() => {
     if (openDropdown === null) return;
-
-    const timeout = setTimeout(() => {
-      const handler = (e: MouseEvent) => {
-        const dropdown = document.querySelector('.bar-dropdown');
-        const barMode = document.querySelector('.bar-mode');
-        if (dropdown && (dropdown.contains(e.target as Node) || barMode?.contains(e.target as Node))) {
-          return;
-        }
-        setOpenDropdown(null);
-      };
-      document.addEventListener('mousedown', handler);
-      document.addEventListener('mouseup', handler);
-    }, 100);
-
-    return () => {
-      clearTimeout(timeout);
+    const handler = (e: MouseEvent) => {
+      const dropdown = document.querySelector('.bar-dropdown');
+      const barMode = document.querySelector('.bar-mode');
+      if (dropdown && (dropdown.contains(e.target as Node) || barMode?.contains(e.target as Node))) {
+        return;
+      }
+      setOpenDropdown(null);
     };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
   }, [openDropdown]);
 
-  const handleCellClick = useCallback((state: Session['state'], list: Session[]) => {
+  const handleCellEnter = useCallback((state: Session['state'], list: Session[]) => {
     if (list.length > 1) {
-      setOpenDropdown(prev => prev === state ? null : state);
-    } else if (list.length === 1) {
+      setOpenDropdown(state);
+    }
+  }, []);
+
+  const handleCellLeave = useCallback(() => {}, []);
+
+  const handleCellClick = useCallback((_state: Session['state'], list: Session[]) => {
+    if (list.length === 1) {
       onSessionClick(list[0].id);
     }
   }, [onSessionClick]);
@@ -89,6 +89,8 @@ export function TopBar({ sessions, onSessionClick, onBackToCard, isPinned, onTog
             <div key={state} className="bar-col">
               <div
                 className={`bar-cell ${count === 0 ? 'bar-cell--empty' : ''}`}
+                onMouseEnter={() => handleCellEnter(state, list)}
+                onMouseLeave={handleCellLeave}
                 onClick={() => handleCellClick(state, list)}
               >
                 <span className={`bar-dot bar-dot--${count === 0 ? 'empty' : state}`} />
