@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Session } from '../types';
 import './TopBar.css';
 
@@ -170,26 +170,22 @@ function Dropdown({
   state: Session['state'];
   onSelect: (id: string) => void;
 }) {
-  const [pos, setPos] = useState({ top: 0, left: 0, width: 160 });
-  const barModeRef = useRef<HTMLElement | null>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 180 });
 
   useEffect(() => {
-    if (!barModeRef.current) {
-      barModeRef.current = document.querySelector('.bar-mode');
-    }
-    const barMode = barModeRef.current;
+    const barMode = document.querySelector('.bar-mode') as HTMLElement | null;
     if (!barMode) return;
-    const cols = barMode.children as HTMLCollectionOf<HTMLElement>;
+    const cols = barMode.querySelectorAll(':scope > .bar-col');
     const stateIndex = STATE_ORDER.indexOf(state);
     if (stateIndex < 0 || stateIndex >= cols.length) return;
-    const targetCell = cols[stateIndex];
+    const targetCell = cols[stateIndex] as HTMLElement;
     if (!targetCell) return;
 
     const rect = targetCell.getBoundingClientRect();
     setPos({
-      top: rect.bottom + 4,
+      top: rect.bottom + 6,
       left: rect.left,
-      width: Math.max(rect.width, 160),
+      width: Math.max(rect.width, 180),
     });
   }, [state]);
 
