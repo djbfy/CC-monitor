@@ -3,11 +3,11 @@
 use crate::session::SessionMonitor;
 use crate::state_machine::matches_confirm;
 use portable_pty::{CommandBuilder, PtySize, Child};
-use std::io::Read;
+use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::process::Command;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, LazyLock, Mutex};
+use std::sync::{Arc, LazyLock, Mutex, mpsc};
 use std::time::Instant;
 use std::mem::ManuallyDrop;
 
@@ -23,6 +23,9 @@ pub struct PtyChild {
     /// Stored here to prevent it from being dropped; dropping the master closes ConPTY.
     #[allow(dead_code)]
     master: ManuallyDrop<Box<dyn portable_pty::MasterPty + Send>>,
+    /// Sender for writing to PTY stdin. Clone and store in SessionMonitor.
+    /// On Windows ConPTY: writing through this sends to the child process's stdin.
+    pub write_tx: Option<mpsc::Sender<Vec<u8>>>,
 }
 
 /// Cached node.exe path — resolved once per app lifetime using LazyLock.
@@ -110,6 +113,36 @@ pub fn spawn_pty(
 
     let pid = child.process_id().unwrap_or(0);
 
+    // Writer thread: receives bytes from channel and writes to PTY stdin.
+    // This allows external tools to approve/deny confirmations by writing to PTY.
+    let (write_tx, write_rx): (mpsc::Sender<Vec<u8>>, mpsc::Receiver<Vec<u8>>) = mpsc::channel();
+    let mut writer = match pair.master.take_writer() {
+        Ok(w) => w,
+        Err(e) => {
+            eprintln!("[pty] take_writer failed: {}", e);
+            return Err(format!("failed to take PTY writer: {}", e));
+        }
+    };
+    let shutdown_writer = shutdown_flag.clone();
+    std::thread::spawn(move || {
+        loop {
+            if shutdown_writer.load(Ordering::Relaxed) {
+                break;
+            }
+            match write_rx.recv_timeout(std::time::Duration::from_millis(100)) {
+                Ok(data) => {
+                    if let Err(e) = writer.write_all(&data) {
+                        eprintln!("[pty] write error: {}", e);
+                        break;
+                    }
+                    let _ = writer.flush();
+                }
+                Err(mpsc::RecvTimeoutError::Disconnected) => break,
+                Err(mpsc::RecvTimeoutError::Timeout) => {}
+            }
+        }
+    });
+
     // Reader thread: read PTY output and update monitor so monitoring loop can
     // detect user activity (CC produces terminal output when user types).
     // Respects shutdown_flag to exit cleanly when the session is stopped.
@@ -149,17 +182,21 @@ pub fn spawn_pty(
                                 continue;
                             }
 
-                            let mut m = monitor_clone.lock().unwrap();
-                            if matches_confirm(&line) {
-                                m.awaiting_confirm = true;
-                            }
+                            let confirm_match = matches_confirm(&line);
                             let is_user_keypress = line.starts_with('\x1b') || line == "\r";
-                            if !is_user_keypress && !matches_confirm(&line) {
-                                m.awaiting_confirm = false;
+
+                            {
+                                let mut m = monitor_clone.lock().unwrap();
+                                if confirm_match {
+                                    m.awaiting_confirm = true;
+                                }
+                                if !is_user_keypress && !confirm_match {
+                                    m.awaiting_confirm = false;
+                                }
+                                m.last_line = line.clone();
+                                m.last_output = Instant::now();
+                                m.has_seen_output = true;
                             }
-                            m.last_line = line.clone();
-                            m.last_output = Instant::now();
-                            m.has_seen_output = true;
                         }
                     }
                 }
@@ -171,6 +208,7 @@ pub fn spawn_pty(
         child,
         pid,
         master: ManuallyDrop::new(pair.master),
+        write_tx: Some(write_tx),
     })
 }
 

@@ -10,7 +10,8 @@ use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use sysinfo::System;
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize};
+use crate::hooks_server::HookAction;
 use tokio::sync::mpsc;
 use uuid::Uuid;
 
@@ -135,10 +136,6 @@ pub async fn discover_sessions(
             }
 
             let pid_u32 = pid.as_u32();
-            if seen_pids.contains(&pid_u32) {
-                continue;
-            }
-            seen_pids.insert(pid_u32);
 
             let work_dir = proc.cwd()
                 .map(|p| p.to_path_buf())
@@ -148,12 +145,17 @@ pub async fn discover_sessions(
                 continue;
             }
 
+            if seen_pids.contains(&pid_u32) {
+                continue;
+            }
+            seen_pids.insert(pid_u32);
+
             let id = Uuid::new_v4().to_string();
             let name = work_dir.file_name()
                 .map(|n| n.to_string_lossy().to_string())
                 .unwrap_or_else(|| format!("CC-{}", pid_u32));
 
-            let monitor = SessionMonitor::new(id.clone(), name, work_dir, Some(pid_u32));
+            let monitor = SessionMonitor::new(id.clone(), name.clone(), work_dir.clone(), Some(pid_u32));
 
             let _ = tx.blocking_send((monitor, id)).is_ok();
         }
@@ -223,12 +225,13 @@ pub async fn launch_session(work_dir: String, app: AppHandle) -> Result<String, 
 
     let shutdown_flag = monitor.lock().unwrap().stopped.clone();
 
-    let pty_result = spawn_pty(&work_path, monitor.clone(), shutdown_flag)
+    let mut pty_result = spawn_pty(&work_path, monitor.clone(), shutdown_flag)
         .map_err(|e| format!("启动 PTY 失败: {}", e))?;
 
     {
         let mut m = monitor.lock().unwrap();
         m.pid = Some(pty_result.pid);
+        m.pty_write_tx = pty_result.write_tx.take();
         m.pty_child = Some(pty_result);
     }
 
@@ -329,7 +332,16 @@ pub fn set_view_mode(mode: String, app: AppHandle) -> Result<(), String> {
     match mode.as_str() {
         "bar" => {
             if let Some(w) = main { let _ = w.hide(); }
-            if let Some(w) = bar { let _ = w.show(); }
+            if let Some(w) = bar {
+                // Position bar at top-center, below system taskbar
+                if let Ok(Some(monitor)) = app.primary_monitor() {
+                    let monitor_size = monitor.size();
+                    let bar_size = w.outer_size().unwrap_or(PhysicalSize::new(800, 44));
+                    let x = ((monitor_size.width as i32) - (bar_size.width as i32)) / 2;
+                    let _ = w.set_position(PhysicalPosition::new(x.max(0), 40));
+                }
+                let _ = w.show();
+            }
         }
         "card" => {
             if let Some(w) = bar { let _ = w.hide(); }
@@ -352,6 +364,36 @@ pub fn get_view_mode(app: AppHandle) -> Result<String, String> {
     }
 }
 
+#[tauri::command]
+pub fn respond_confirm(id: String, action: String, app: AppHandle) -> Result<(), String> {
+    let state = app.state::<AppState>();
+    let monitors = state.monitors.lock().unwrap();
+    let monitor = monitors.get(&id).ok_or("会话不存在")?;
+    let write_tx = {
+        let m = monitor.lock().unwrap();
+        m.pty_write_tx.clone()
+    };
+    drop(monitors);
+
+    let tx = write_tx.ok_or("该会话不支持写入 PTY")?;
+    let line = crate::hooks_server::pty_line_for_action(action.as_str())
+        .ok_or_else(|| "action 必须是 approve/allow 或 deny/reject".to_string())?;
+    tx.send(line.as_bytes().to_vec())
+        .map_err(|e| format!("写入 PTY 失败: {}", e))?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn register_hook(url: String, events: Vec<String>, app: AppHandle) -> Result<(), String> {
+    use crate::hooks_server::HookRegistration;
+    let state = app.state::<AppState>();
+    let hook_tx = state.hook_tx.lock().unwrap();
+    let tx = hook_tx.as_ref().ok_or("Hook server 未启动")?;
+    tx.send(HookAction::Register {
+        registration: HookRegistration { url, events },
+    }).map_err(|e| format!("注册 hook 失败: {}", e))?;
+    Ok(())
+}
 
 #[tauri::command]
 pub fn exit_app(app: AppHandle) {
