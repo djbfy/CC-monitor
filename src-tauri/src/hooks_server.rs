@@ -8,7 +8,38 @@
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::time::{SystemTime, UNIX_EPOCH};
+use std::fs::{self, OpenOptions};
+use std::path::PathBuf;
+use std::io::Write as IoWrite;
 use tiny_http::{Response, Server};
+
+// === File Logging ===
+
+fn log_dir() -> PathBuf {
+    PathBuf::from("D:/CODE/CCproject/cc-monitor/log")
+}
+
+fn hook_log(msg: &str) {
+    let dir = log_dir();
+    let _ = fs::create_dir_all(&dir);
+    let log_file = dir.join("hooks.log");
+    let ts = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    let line = format!("[{}] {}\n", ts, msg);
+    let _ = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&log_file)
+        .and_then(|mut f| f.write_all(line.as_bytes()));
+    eprintln!("[hook] {}", msg);
+}
+
+fn hook_log_json(path: &str, body: &[u8]) {
+    hook_log(&format!("POST {} | body: {}", path, String::from_utf8_lossy(body)));
+}
 
 /// Hook event sent to registered external webhooks.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -170,11 +201,11 @@ pub fn start_hook_server(
     let server = match Server::http(&addr) {
         Ok(s) => s,
         Err(e) => {
-            eprintln!("[hooks] failed to bind {}: {}", addr, e);
+            hook_log(&format!("FAILED to bind {}: {}", addr, e));
             return;
         }
     };
-    eprintln!("[hooks] server listening on http://{}", addr);
+    hook_log(&format!("Hook server listening on http://{}", addr));
 
     loop {
         // Use recv_timeout for non-blocking request handling
@@ -188,6 +219,7 @@ pub fn start_hook_server(
             let mut body = Vec::new();
             let _ = request.as_reader().read_to_end(&mut body);
             let body_str = String::from_utf8_lossy(&body);
+            hook_log_json(&path, &body);
 
             let response = match (method.as_str(), path.as_str()) {
                 ("POST", "/hook/register") => {
@@ -235,6 +267,7 @@ pub fn start_hook_server(
                 ("POST", "/hook/confirm") => {
                     // CC's pre_tool_use hook calls this to wait for user confirm.
                     // Blocks until monitor responds with allow/deny.
+                    hook_log(&format!("=== CONFIRM RECEIVED ==="));
                     #[derive(Deserialize)]
                     struct ConfirmPayload {
                         cwd: Option<String>,
@@ -244,6 +277,7 @@ pub fn start_hook_server(
                     #[derive(Serialize)]
                     struct ConfirmResp { action: String }
                     if let Ok(payload) = serde_json::from_str::<ConfirmPayload>(&body_str) {
+                        hook_log(&format!("  cwd={:?} tool={:?} msg={:?}", payload.cwd, payload.tool, payload.message));
                         let tool = payload.tool.clone().unwrap_or_default();
                         let msg = payload.message.clone().unwrap_or_default();
                         let prompt = format!("[{}] {}", tool, msg);
@@ -258,6 +292,7 @@ pub fn start_hook_server(
                                 tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"application/json"[..]).unwrap()
                             )
                     } else {
+                        hook_log(&format!("  FAILED to parse confirm payload"));
                         Response::from_string("{\"action\":\"allow\"}")
                             .with_header(
                                 tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"application/json"[..]).unwrap()
@@ -265,9 +300,11 @@ pub fn start_hook_server(
                     }
                 }
                 ("POST", "/hook/confirm-resolved") => {
+                    hook_log(&format!("=== CONFIRM_RESOLVED RECEIVED ==="));
                     #[derive(Deserialize)]
                     struct ResolvedPayload { session_id: String, cwd: Option<String> }
                     if let Ok(payload) = serde_json::from_str::<ResolvedPayload>(&body_str) {
+                        hook_log(&format!("  session_id={} cwd={:?}", payload.session_id, payload.cwd));
                         let _ = hook_tx.send(HookAction::ConfirmResolvedByDir {
                             cwd: payload.cwd.unwrap_or_default(),
                         });
