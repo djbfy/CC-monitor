@@ -4,3 +4,4 @@ dist-tauri
 target
 .DS_Store
 *.log
+logs/

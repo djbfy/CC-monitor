@@ -17,7 +17,11 @@ use tiny_http::{Response, Server};
 // === File Logging ===
 
 fn log_dir() -> PathBuf {
-    PathBuf::from("D:/CODE/CCproject/cc-monitor/log")
+    std::env::current_exe()
+        .ok()
+        .and_then(|p| p.parent().map(|p| p.to_path_buf()))
+        .map(|p| p.join("logs"))
+        .unwrap_or_else(|| PathBuf::from("logs"))
 }
 
 fn hook_log(msg: &str) {

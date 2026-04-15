@@ -9,7 +9,7 @@ pub mod hooks_server;
 
 use state::AppState;
 use hooks_server::{HookAction, start_hook_server};
-use tauri::{Manager, WindowEvent};
+use tauri::{Emitter, Manager, WindowEvent};
 
 const HOOK_PORT: u16 = 4321;
 
@@ -41,6 +41,7 @@ pub fn run() {
             // Writes PTY responses (approve/deny) and broadcasts confirm events.
             let monitors = state.monitors.clone();
             let hook_manager = hooks_server::init_hook_manager();
+            let app_clone = handle.clone();
             std::thread::spawn(move || {
                 for action in hook_rx.iter() {
                     match action {
@@ -73,33 +74,51 @@ pub fn run() {
                             hook_manager.notify_confirm_start(&session_id, &prompt);
                         }
                         HookAction::ConfirmNotifyByDir { cwd, prompt } => {
-                            let cwd_normalized = cwd.trim_end_matches('\\');
+                            let cwd_normalized = cwd.trim_end_matches('\\').to_string();
                             let found = {
                                 let guards = monitors.lock().unwrap();
                                 guards.values().find(|m| {
-                                    m.lock().unwrap().work_dir.to_string_lossy().trim_end_matches('\\') == cwd_normalized
+                                    let work_dir = m.lock().unwrap().work_dir.to_string_lossy().trim_end_matches('\\').to_string();
+                                    work_dir == cwd_normalized || cwd_normalized.starts_with(&work_dir) || work_dir.starts_with(&cwd_normalized)
                                 }).cloned()
                             };
                             if let Some(monitor) = found {
-                                let mut m = monitor.lock().unwrap();
-                                m.awaiting_confirm = true;
-                                m.last_line = prompt.clone();
-                                let sid = m.id.clone();
-                                drop(m);
+                                let sid = {
+                                    let mut m = monitor.lock().unwrap();
+                                    m.awaiting_confirm = true;
+                                    m.last_line = prompt.clone();
+                                    m.state = crate::session::SessionState::Confirm;
+                                    m.id.clone()
+                                };
+                                // Immediately emit session_update so frontend sees confirm state
+                                let infos: Vec<crate::session::SessionInfo> = monitors.lock().unwrap().values()
+                                    .map(|m| m.lock().unwrap().to_info())
+                                    .collect();
+                                let _ = app_clone.emit("session_update", &infos);
                                 hook_manager.notify_confirm_start(&sid, &prompt);
                             }
                         }
                         HookAction::ConfirmResolvedByDir { cwd } => {
-                            let cwd_normalized = cwd.trim_end_matches('\\');
+                            let cwd_normalized = cwd.trim_end_matches('\\').to_string();
                             let found = {
                                 let guards = monitors.lock().unwrap();
                                 guards.values().find(|m| {
-                                    m.lock().unwrap().work_dir.to_string_lossy().trim_end_matches('\\') == cwd_normalized
+                                    let work_dir = m.lock().unwrap().work_dir.to_string_lossy().trim_end_matches('\\').to_string();
+                                    work_dir == cwd_normalized || cwd_normalized.starts_with(&work_dir) || work_dir.starts_with(&cwd_normalized)
                                 }).cloned()
                             };
                             if let Some(monitor) = found {
-                                let mut m = monitor.lock().unwrap();
-                                m.awaiting_confirm = false;
+                                {
+                                    let mut m = monitor.lock().unwrap();
+                                    m.awaiting_confirm = false;
+                                    m.last_line = String::new();
+                                    m.state = crate::session::SessionState::Running;
+                                }
+                                // Immediately emit session_update so frontend sees running state
+                                let infos: Vec<crate::session::SessionInfo> = monitors.lock().unwrap().values()
+                                    .map(|m| m.lock().unwrap().to_info())
+                                    .collect();
+                                let _ = app_clone.emit("session_update", &infos);
                             }
                         }
                         HookAction::Register { registration } => {
