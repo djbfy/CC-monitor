@@ -102,6 +102,7 @@ fn spawn_monitor_loop(
             if new_state == SessionState::Offline {
                 let silent = monitor_clone.lock().unwrap().last_output.elapsed().as_secs();
                 if silent >= OFFLINE_CLEANUP_SECS {
+                    monitors_clone.lock().unwrap().remove(&session_id);
                     let _ = app_clone.emit("session_cleanup", &session_id);
                     break;
                 }
