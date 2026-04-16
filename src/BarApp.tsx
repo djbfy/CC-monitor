@@ -14,12 +14,20 @@ export default function BarApp() {
     invoke<Session[]>('get_sessions').then(setSessions).catch(console.error);
     getCurrentWindow().isAlwaysOnTop().then(setIsPinned).catch(() => {});
 
-    const unlisten = listen<Session[]>('session_update', (event) => {
+    let unlistenUpdate: Promise<() => void>;
+    let unlistenCleanup: Promise<() => void>;
+
+    unlistenUpdate = listen<Session[]>('session_update', (event) => {
       setSessions(event.payload);
     });
 
+    unlistenCleanup = listen<string>('session_cleanup', (event) => {
+      setSessions((prev) => prev.filter((s) => s.id !== event.payload));
+    });
+
     return () => {
-      unlisten.then((fn) => fn());
+      unlistenUpdate.then((fn) => fn());
+      unlistenCleanup.then((fn) => fn());
     };
   }, []);
 
@@ -58,9 +66,7 @@ export default function BarApp() {
       style={{
         position: 'absolute',
         inset: 0,
-        background: 'var(--color-bg-surface)',
-        backdropFilter: 'var(--blur)',
-        WebkitBackdropFilter: 'var(--blur)',
+        background: '#0d0d12',
         overflow: 'visible',
       }}
     >

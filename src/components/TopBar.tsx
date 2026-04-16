@@ -12,10 +12,10 @@ const STATE_ORDER: Session['state'][] = ['running', 'confirm', 'idle', 'offline'
 const STATE_INDEX = Object.fromEntries(STATE_ORDER.map((s, i) => [s, i]));
 
 const STATE_LABELS: Record<Session['state'], string> = {
-  running: '运行中',
-  confirm: '待确认',
-  idle: '休息中',
-  offline: '离线',
+  running: 'Running',
+  confirm: 'Confirm',
+  idle: 'Idle',
+  offline: 'Offline',
 };
 
 interface TopBarProps {
@@ -37,13 +37,17 @@ export function TopBar({ sessions, onSessionClick, onBackToCard, isPinned, onTog
 
   return (
     <div className="bar-mode">
-      {/* Drag handle */}
+      {/* Drag handle with animated pixel cat */}
       <div className="bar-drag-handle" onMouseDown={startDrag}>
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.4">
-          <line x1="4" y1="6" x2="16" y2="6" />
-          <line x1="4" y1="10" x2="16" y2="10" />
-          <line x1="4" y1="14" x2="16" y2="14" />
-        </svg>
+        <div className="pixel-cat">
+          <div className="pixel-cat__body" />
+          <div className="pixel-cat__tail" />
+          <div className="pixel-cat__ear-left" />
+          <div className="pixel-cat__ear-right" />
+          <div className="pixel-cat__eye-left" />
+          <div className="pixel-cat__eye-right" />
+          <div className="pixel-cat__nose" />
+        </div>
       </div>
 
       {/* Scrollable session tiles */}
