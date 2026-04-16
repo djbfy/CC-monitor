@@ -13,6 +13,7 @@ use sysinfo::System;
 use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize};
 use crate::hooks_server::HookAction;
 use tokio::sync::mpsc;
+
 use uuid::Uuid;
 
 // === Constants ===
@@ -127,16 +128,25 @@ pub async fn discover_sessions(
         let mut seen_pids: HashSet<u32> = HashSet::new();
 
         for (pid, proc) in sys.processes() {
-            let cmd_str = proc.cmd().iter()
-                .map(|s| s.to_string())
-                .collect::<Vec<_>>()
-                .join(" ");
+            // Skip non-running processes (zombie/terminating)
+            use sysinfo::ProcessStatus;
+            if proc.status() != ProcessStatus::Run {
+                continue;
+            }
 
-            if !cmd_str.contains("@anthropic-ai/claude-code") {
+            // Double-check: only accept if memory usage > 0 (real alive process)
+            if proc.memory() == 0 {
                 continue;
             }
 
             let pid_u32 = pid.as_u32();
+
+            // Quick CC check without heap allocation
+            let is_cc = proc.cmd().iter()
+                .any(|s| s.contains("@anthropic-ai/claude-code"));
+            if !is_cc {
+                continue;
+            }
 
             let work_dir = proc.cwd()
                 .map(|p| p.to_path_buf())

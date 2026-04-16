@@ -66,9 +66,7 @@ export default function BarApp() {
       style={{
         position: 'absolute',
         inset: 0,
-        background: 'var(--color-bg-surface)',
-        backdropFilter: 'var(--blur)',
-        WebkitBackdropFilter: 'var(--blur)',
+        background: '#0d0d12',
         overflow: 'visible',
       }}
     >
