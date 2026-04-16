@@ -6,11 +6,11 @@
 
 卡片模式
 
-![407345ac-dfee-4f70-b014-9600e2e96de5](file:///C:/Users/12520/Pictures/Typedown/407345ac-dfee-4f70-b014-9600e2e96de5.png)
+![卡片模式](assets/407345ac-dfee-4f70-b014-9600e2e96de5.png)
 
 顶栏模式
 
-![4c612e20-eaa9-4b6c-ae12-073f9b42c20d](file:///C:/Users/12520/Pictures/Typedown/4c612e20-eaa9-4b6c-ae12-073f9b42c20d.png)
+![顶栏模式](assets/4c612e20-eaa9-4b6c-ae12-073f9b42c20d.png)
 
 ## 功能特性
 
