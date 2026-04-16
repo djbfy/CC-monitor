@@ -2,6 +2,16 @@
 
 桌面端 Claude Code 会话监控工具（Windows）。
 
+
+
+卡片模式
+
+![卡片模式](assets/407345ac-dfee-4f70-b014-9600e2e96de5.png)
+
+顶栏模式
+
+![顶栏模式](assets/4c612e20-eaa9-4b6c-ae12-073f9b42c20d.png)
+
 ## 功能特性
 
 - **会话发现**：自动扫描并监控系统中正在运行的 Claude Code 进程
@@ -51,6 +61,7 @@ CC-Monitor/hooks/  →  ~/.claude/hooks/
 ```
 
 将 `<CC-MONITOR-PATH>` 替换为实际的 CC Monitor 路径，例如：
+
 - Windows: `C:/cc-monitor/hooks`
 - Linux/Mac: `/home/user/cc-monitor/hooks`
 
@@ -70,12 +81,13 @@ CC-Monitor/hooks/  →  ~/.claude/hooks/
 
 Hook 脚本支持以下环境变量自定义：
 
-| 变量 | 默认值 | 说明 |
-|------|--------|------|
-| `CC_MONITOR_PORT` | `4321` | Monitor HTTP 服务端口 |
-| `CC_MONITOR_LOG` | `./logs` | 日志目录（相对于项目根目录） |
+| 变量                | 默认值      | 说明                |
+| ----------------- | -------- | ----------------- |
+| `CC_MONITOR_PORT` | `4321`   | Monitor HTTP 服务端口 |
+| `CC_MONITOR_LOG`  | `./logs` | 日志目录（相对于项目根目录）    |
 
 示例：
+
 ```bash
 # 启动 CC Monitor 时指定端口
 CC_MONITOR_PORT=5000 ./cc-monitor.exe
@@ -114,9 +126,9 @@ npm run tauri build
 
 ## 快捷键
 
-| 操作 | 说明 |
-|------|------|
-| 双击会话名称 | 编辑名称 |
+| 操作             | 说明       |
+| -------------- | -------- |
+| 双击会话名称         | 编辑名称     |
 | Enter / Escape | 确认/取消重命名 |
 
 ## 技术栈
