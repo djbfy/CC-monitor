@@ -102,18 +102,20 @@ export function SessionCard({ session, onRemove }: SessionCardProps) {
             {session.name}
           </span>
         )}
-        <span className="card-pid">
-          {session.pid !== null ? `PID ${session.pid}` : '—'}
-        </span>
-        {onRemove && (
-          <button
-            className="card-remove"
-            onClick={() => onRemove(session.id)}
-            title="移除监控"
-          >
-            ×
-          </button>
-        )}
+        <div className="card-head-right">
+          <span className="card-pid">
+            {session.pid !== null ? `PID ${session.pid}` : '—'}
+          </span>
+          {onRemove && (
+            <button
+              className="card-remove"
+              onClick={() => onRemove(session.id)}
+              title="移除监控"
+            >
+              ×
+            </button>
+          )}
+        </div>
       </div>
       <div className="status-row">
         <StatusDot state={session.state} />

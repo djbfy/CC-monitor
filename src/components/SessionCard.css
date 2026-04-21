@@ -46,6 +46,14 @@
   justify-content: space-between;
   margin-bottom: 9px;
   position: relative;
+  min-width: 0;
+}
+
+.card-head-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .card-name {
@@ -56,7 +64,8 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 70%;
+  min-width: 0;
+  flex-shrink: 1;
   cursor: text;
 }
 
@@ -74,7 +83,8 @@
   border-radius: 5px;
   padding: 1px 6px;
   outline: none;
-  max-width: 70%;
+  min-width: 0;
+  flex: 1;
   box-shadow: 0 0 0 2px rgba(10,132,255,0.15);
 }
 
@@ -82,6 +92,7 @@
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--color-text-tertiary);
+  flex-shrink: 0;
 }
 
 .card-remove {
@@ -94,10 +105,7 @@
   line-height: 1;
   opacity: 0;
   transition: opacity 0.15s, color 0.15s;
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  flex-shrink: 0;
 }
 
 .card:hover .card-remove {

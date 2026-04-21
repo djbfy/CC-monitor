@@ -16,6 +16,16 @@ use tokio::sync::mpsc;
 
 use uuid::Uuid;
 
+#[cfg(windows)]
+extern "system" {
+    fn OpenProcess(desired_access: u32, inherit_handle: i32, process_id: u32) -> *mut std::ffi::c_void;
+    fn CloseHandle(handle: *mut std::ffi::c_void) -> i32;
+    fn GetCurrentProcessId() -> u32;
+}
+
+#[cfg(windows)]
+const PROCESS_QUERY_LIMITED_INFORMATION: u32 = 0x1000;
+
 // === Constants ===
 
 const OFFLINE_CLEANUP_SECS: u64 = 10 * 60;
@@ -127,6 +137,10 @@ pub async fn discover_sessions(
 
         let mut seen_pids: HashSet<u32> = HashSet::new();
 
+        // Skip processes whose parent is cc-monitor itself (i.e., spawned by this monitor's sub-agents)
+        #[cfg(windows)]
+        let monitor_pid = unsafe { GetCurrentProcessId() };
+
         for (pid, proc) in sys.processes() {
             // Skip non-running processes (zombie/terminating)
             use sysinfo::ProcessStatus;
@@ -141,16 +155,25 @@ pub async fn discover_sessions(
 
             let pid_u32 = pid.as_u32();
 
-            // Quick CC check: support multiple detection methods
-            // 1. Process name: claude.exe (official installer)
-            // 2. Command line: contains @anthropic-ai/claude-code (npx/npm)
-            // 3. Command line: contains claude-code/cli.js (node direct)
-            // 4. Executable path: contains "claude" (all cases)
+            #[cfg(windows)]
+            {
+                let handle = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid_u32) };
+                if handle.is_null() {
+                    continue;
+                }
+                unsafe { CloseHandle(handle) };
+            }
+
             let is_cc =
                 proc.name().eq_ignore_ascii_case("claude.exe")
                 || proc.cmd().iter().any(|s| s.contains("@anthropic-ai/claude-code"))
                 || proc.cmd().iter().any(|s| s.contains("claude-code/cli.js"))
                 || proc.exe().map(|p| p.to_string_lossy().to_lowercase().contains("claude")).unwrap_or(false);
+
+            #[cfg(windows)]
+            if proc.parent().map(|pp: sysinfo::Pid| pp.as_u32() == monitor_pid).unwrap_or(false) {
+                continue;
+            }
             if !is_cc {
                 continue;
             }
