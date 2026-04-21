@@ -1,29 +1,38 @@
 import ReactDOM from "react-dom/client";
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import App from "./App";
 import BarApp from "./BarApp";
 import "./styles/tokens.css";
 
 const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
 
-// Detect which Tauri window is rendering.
-// In Tauri v2, __TAURI_INTERNALS__.metadata.currentWebview.label is set before JS runs.
-// For dev mode without Tauri (e.g. Vite dev server), we need a different approach.
-function getWindowLabel(): string | undefined {
-  const label = (window as any).__TAURI_INTERNALS__?.metadata?.currentWebview?.label;
-  if (label) return label;
-  const name = (window as any).name;
-  if (name) return name;
-  const tauriLabel = (window as any).__TAURI_WINDOW_LABEL__;
-  if (tauriLabel) return tauriLabel;
-  // Fallback for dev: read from URL param ?window=bar
-  const params = new URLSearchParams(window.location.search);
-  return params.get('window') ?? undefined;
+window.onerror = (msg, src, line, col, err) => {
+  console.error('[JS ERROR]', msg, 'at', src, 'line', line, 'col', col, err);
+  const id = 'js-error-overlay';
+  let el = document.getElementById(id);
+  if (!el) {
+    el = document.createElement('div');
+    el.id = id;
+    el.style = 'position:fixed;inset:0;z-index:9999;background:#1e1e24;color:#f87171;padding:20px;font-family:monospace;font-size:12px;overflow:auto';
+    document.body.appendChild(el);
+  }
+  el.innerHTML = `<pre><b>JS Error:</b> ${msg}\n<b>File:</b> ${src}:${line}:${col}\n<b>Stack:</b> ${err?.stack || err?.message || ''}</pre>`;
+};
+
+async function init() {
+  try {
+    const win = getCurrentWindow();
+    const label = win.label;
+    if (label === "bar") {
+      root.render(<BarApp />);
+    } else {
+      root.render(<App />);
+    }
+  } catch (e) {
+    console.error('[init] getCurrentWindow() failed, falling back:', e);
+    const params = new URLSearchParams(window.location.search);
+    root.render(params.get('window') === 'bar' ? <BarApp /> : <App />);
+  }
 }
 
-const windowLabel = getWindowLabel();
-
-if (windowLabel === "bar") {
-  root.render(<BarApp />);
-} else {
-  root.render(<App />);
-}
+init();

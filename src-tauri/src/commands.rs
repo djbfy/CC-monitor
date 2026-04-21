@@ -16,6 +16,16 @@ use tokio::sync::mpsc;
 
 use uuid::Uuid;
 
+#[cfg(windows)]
+extern "system" {
+    fn OpenProcess(desired_access: u32, inherit_handle: i32, process_id: u32) -> *mut std::ffi::c_void;
+    fn CloseHandle(handle: *mut std::ffi::c_void) -> i32;
+    fn GetCurrentProcessId() -> u32;
+}
+
+#[cfg(windows)]
+const PROCESS_QUERY_LIMITED_INFORMATION: u32 = 0x1000;
+
 // === Constants ===
 
 const OFFLINE_CLEANUP_SECS: u64 = 10 * 60;
@@ -127,6 +137,10 @@ pub async fn discover_sessions(
 
         let mut seen_pids: HashSet<u32> = HashSet::new();
 
+        // Skip processes whose parent is cc-monitor itself (i.e., spawned by this monitor's sub-agents)
+        #[cfg(windows)]
+        let monitor_pid = unsafe { GetCurrentProcessId() };
+
         for (pid, proc) in sys.processes() {
             // Skip non-running processes (zombie/terminating)
             use sysinfo::ProcessStatus;
@@ -141,9 +155,30 @@ pub async fn discover_sessions(
 
             let pid_u32 = pid.as_u32();
 
-            // Quick CC check without heap allocation
+            #[cfg(windows)]
+            {
+                let handle = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid_u32) };
+                if handle.is_null() {
+                    continue; // Process doesn't exist — phantom entry
+                }
+                unsafe { CloseHandle(handle) };
+            }
+
+            // Quick CC check — short-circuit on first match
             let is_cc = proc.cmd().iter()
-                .any(|s| s.contains("@anthropic-ai/claude-code"));
+                .any(|s| s.contains("@anthropic-ai/claude-code") || s.contains("claude-code"));
+
+            if cfg!(debug_assertions) {
+                let preview: String = proc.cmd().iter().take(3).map(|s| s.as_str()).collect::<Vec<&str>>().join(" ");
+                eprintln!("[discover] pid={}, status={:?}, mem={}, is_cc={}, cmd={}", pid_u32, proc.status(), proc.memory(), is_cc, preview);
+            }
+
+            // Skip CC processes spawned by this monitor's sub-agents
+            #[cfg(windows)]
+            if proc.parent().map(|pp: sysinfo::Pid| pp.as_u32() == monitor_pid).unwrap_or(false) {
+                continue;
+            }
+
             if !is_cc {
                 continue;
             }
