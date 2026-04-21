@@ -159,26 +159,21 @@ pub async fn discover_sessions(
             {
                 let handle = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid_u32) };
                 if handle.is_null() {
-                    continue; // Process doesn't exist — phantom entry
+                    continue;
                 }
                 unsafe { CloseHandle(handle) };
             }
 
-            // Quick CC check — short-circuit on first match
-            let is_cc = proc.cmd().iter()
-                .any(|s| s.contains("@anthropic-ai/claude-code") || s.contains("claude-code"));
+            let is_cc =
+                proc.name().eq_ignore_ascii_case("claude.exe")
+                || proc.cmd().iter().any(|s| s.contains("@anthropic-ai/claude-code"))
+                || proc.cmd().iter().any(|s| s.contains("claude-code/cli.js"))
+                || proc.exe().map(|p| p.to_string_lossy().to_lowercase().contains("claude")).unwrap_or(false);
 
-            if cfg!(debug_assertions) {
-                let preview: String = proc.cmd().iter().take(3).map(|s| s.as_str()).collect::<Vec<&str>>().join(" ");
-                eprintln!("[discover] pid={}, status={:?}, mem={}, is_cc={}, cmd={}", pid_u32, proc.status(), proc.memory(), is_cc, preview);
-            }
-
-            // Skip CC processes spawned by this monitor's sub-agents
             #[cfg(windows)]
             if proc.parent().map(|pp: sysinfo::Pid| pp.as_u32() == monitor_pid).unwrap_or(false) {
                 continue;
             }
-
             if !is_cc {
                 continue;
             }
