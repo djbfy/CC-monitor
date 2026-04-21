@@ -141,9 +141,16 @@ pub async fn discover_sessions(
 
             let pid_u32 = pid.as_u32();
 
-            // Quick CC check without heap allocation
-            let is_cc = proc.cmd().iter()
-                .any(|s| s.contains("@anthropic-ai/claude-code"));
+            // Quick CC check: support multiple detection methods
+            // 1. Process name: claude.exe (official installer)
+            // 2. Command line: contains @anthropic-ai/claude-code (npx/npm)
+            // 3. Command line: contains claude-code/cli.js (node direct)
+            // 4. Executable path: contains "claude" (all cases)
+            let is_cc =
+                proc.name().eq_ignore_ascii_case("claude.exe")
+                || proc.cmd().iter().any(|s| s.contains("@anthropic-ai/claude-code"))
+                || proc.cmd().iter().any(|s| s.contains("claude-code/cli.js"))
+                || proc.exe().map(|p| p.to_string_lossy().to_lowercase().contains("claude")).unwrap_or(false);
             if !is_cc {
                 continue;
             }
